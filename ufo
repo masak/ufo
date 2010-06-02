@@ -69,11 +69,11 @@ my @sources = map { &module-name-to-path($_) }, @order;
 my $sources = 'SOURCES=';
 my $line-length = 0;
 for @sources -> $source {
-    $line-length += $source.chars;
+    $line-length += $source.chars + 1;
     if $line-length > 65 {
                        # SOURCES=
         $sources ~= "\\\n        ";
-        $line-length = 0;
+        $line-length = $source.chars + 1;
     }
     $sources ~= $source ~ ' ';
 }
