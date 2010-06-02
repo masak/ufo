@@ -57,7 +57,6 @@ Except that I still carry this small device they gave me...
 
 * ABC -- Configure and Makefile.in
 * benchmark -- Configure.pl, lib/Configure.pm and Makefile.in
-* druid -- Configure, lib/Configure.pm and Makefile.in
 * form -- Makefile.PL and Makefile.in
 * gge -- Configure, lib/Configure.pm and Makefile.in
 * grampa -- Configure, lib/Configure.pm and Makefile.in
