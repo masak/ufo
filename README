@@ -1,0 +1,59 @@
+== Unobtrusive Forinsecal Organizer
+
+The abduction story is typical, and doesn't hold any elements of surprise
+for people well-versed in encounters with our gray-skinned "friends". Perhaps
+the only odd detail is that in my case, they weren't after my livestock or my
+bodily fluids, but they really wanted to collect all the old ways of
+configuring Perl 6 projects. Collect them and *destroy* them. Blast them out
+of existence.
+
+In return, they handed me a small hand-held device with the letters "ufo" on
+the side.  From now on -- they told me -- whenever I would fall back to my
+primitively human urge to create a Makefile, I would just activate the
+device...
+
+$ ufo
+
+...and it would create the Makefile for me, using 'ambient information'.
+
+When they told me this, they had already beamed me up to their vessel and
+treated me to the best sirloin steak I've *ever* tasted, period. I was a little
+tipsy from the excellent wine, too, but not to the point of being drunk. Entire
+galaxies swooped past outside the ship's windows like they do in exceedingly
+bad movies. I peered at the device.
+
+"Ok, um," I began. "It's important that the modules be built in a certain
+order, sort of like a dependency order, you know. Otherwise the build process
+will be unnecessarily slow because of re-parses. See what I mean?"
+
+They looked at me pityingly, like you'd look at a pre-schooler who wants to
+know all about quantum computing.
+
+"Yes. The build order will be optimized. Try not to think too much, you've
+had a busy day."
+
+Having no other question, I was beamed back to an isolated cow pasture not
+far from where I live. Somehow I knew that my task was now to locate the
+remaining 'Makefile.PL' and 'Configure' files and their brethren, and convince
+others to remove them so that humanity could finally unshackle itself from its
+archaic technology.
+
+And no-one would believe that my story wasn't anything other than a dream.
+Except that I still carry this small device they gave me...
+
+== Repositories that still use human technology
+
+* ABC -- Configure and Makefile.in
+* benchmark -- Configure.pl, lib/Configure.pm and Makefile.in
+* druid -- Configure, lib/Configure.pm and Makefile.in
+* form -- Makefile.PL and Makefile.in
+* gge -- Configure, lib/Configure.pm and Makefile.in
+* grampa -- Configure, lib/Configure.pm and Makefile.in
+* html-template -- Makefile.PL
+* io-prompt -- Configure.pl, lib/Configure.pm and Makefile.in
+* json -- Configure, lib/Configure.pm and Makefile.in
+* Perl6-Term--ANSIColor -- Configure.pl, lib/Configure.pm and Makefile.in
+* statistics-lite -- Makefile.PL and Makefile.in
+* Vector -- Configure, lib/Configure.pm and Makefile.in
+* web -- Configure, lib/Configure.pm and Makefile.in
+* yarn -- Configure.pl, lib/Configure.pm and Makefile.in
