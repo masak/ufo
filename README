@@ -8,7 +8,7 @@ configuring Perl 6 projects. Collect them and *destroy* them. Blast them out
 of existence.
 
 In return, they handed me a small hand-held device with the letters "ufo" on
-the side.  From now on -- they told me -- whenever I would fall back to my
+the side. From now on -- they told me -- whenever I would fall back to my
 primitively human urge to create a Makefile, I would just activate the
 device...
 
@@ -29,8 +29,20 @@ will be unnecessarily slow because of re-parses. See what I mean?"
 They looked at me pityingly, like you'd look at a pre-schooler who wants to
 know all about quantum computing.
 
-"Yes. The build order will be optimized. Try not to think too much, you've
-had a busy day."
+"Yes. The build order will be optimized. Try not to think too much, it's
+not good for you."
+
+I asked them why they had come all the way here to our planet to help us with
+Perl 6 project Makefiles. They looked knowingly at each other, and then went
+into a sort of song-and-dance act, which they really must have rehearsed
+beforehand, 'cause they suddenly had all these special clothes and top hats and
+canes and stuff. As if the situation wasn't unusual enough already, having five
+or six gray ones dress up as Fred Astaire and do a dance number... it was
+taxing on my poor human senses. From what I caught of the lyrics, which was
+full of bad ET clichés, they had travelled many of "our Earth years" to make
+sure that we live up to our "destiny as a species" using our "full potential".
+Apparently -- and here I confess that my memory is a bit vague -- this wouldn't
+be possible if we held on to our old way of configuring Makefiles.
 
 Having no other question, I was beamed back to an isolated cow pasture not
 far from where I live. Somehow I knew that my task was now to locate the
@@ -38,7 +50,7 @@ remaining 'Makefile.PL' and 'Configure' files and their brethren, and convince
 others to remove them so that humanity could finally unshackle itself from its
 archaic technology.
 
-And no-one would believe that my story wasn't anything other than a dream.
+And no-one would believe that my story was anything but a dream.
 Except that I still carry this small device they gave me...
 
 == Repositories that still use human technology
