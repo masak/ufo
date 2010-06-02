@@ -12,7 +12,7 @@ the side. From now on -- they told me -- whenever I would fall back to my
 primitively human urge to create a Makefile, I would just activate the
 device...
 
-$ ufo
+% ufo
 
 ...and it would create the Makefile for me, using 'ambient information'.
 
