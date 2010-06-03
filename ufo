@@ -11,7 +11,9 @@ elsif 'lib' !~~ :d {
     exit;
 }
 
-my @module-files = grep { $_ }, split "\n", qx[find lib -name \*.pm];
+my @module-files = grep { $_ },
+                   split "\n",
+                   qx[find lib -name \*.pm -or -name \*.pm6];
 
 if !@module-files
    || @module-files.elems == 1 && @module-files[0] ~~ /'no such file'/ {
@@ -35,11 +37,12 @@ for @module-files -> $module-file {
 }
 
 sub path-to-module-name($path) {
-    $path.subst(/^'lib/'/, '').subst(/'.pm'$/, '').subst('/', '::', :g);
+    $path.subst(/^'lib/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
 }
 
 sub module-name-to-path($module-name) {
-    'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
+    my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
+    $pm ~~ :e ?? $pm !! $pm ~ '6';
 }
 
 my @order;
@@ -87,11 +90,14 @@ $makefile.say(q[]);
 $makefile.say($sources);
 
 $makefile.say(qq[
-PIRS=\$(SOURCES:.pm=.pir)
+PIRS=\$(patsubst %.pm6,%.pir,\$(SOURCES:.pm=.pir))
 
 all: \$(PIRS)
 
 %.pir: %.pm
+\tenv PERL6LIB=\$(PERL6LIB) \$(PERL6) --target=pir --output=\$@ \$<
+
+%.pir: %.pm6
 \tenv PERL6LIB=\$(PERL6LIB) \$(PERL6) --target=pir --output=\$@ \$<
 
 clean:
