@@ -4,11 +4,11 @@ my $cwd = qx[pwd].chomp;
 
 if 'lib' !~~ :e {
     say "lib/ doesn't exist. Nothing to do.";
-    exit;
+    exit 1;
 }
 elsif 'lib' !~~ :d {
     say "lib isn't a directory. Nothing to do.";
-    exit;
+    exit 1;
 }
 
 my @module-files = grep { $_ },
@@ -18,7 +18,7 @@ my @module-files = grep { $_ },
 if !@module-files
    || @module-files.elems == 1 && @module-files[0] ~~ /'no such file'/ {
     say "Found no modules in lib/. Nothing to do.";
-    exit;
+    exit 1;
 }
 
 my @modules = map { path-to-module-name($_) }, @module-files;
