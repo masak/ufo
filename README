@@ -60,9 +60,7 @@ Except that I still carry this small device they gave me...
 * form -- Makefile.PL and Makefile.in
 * gge -- Configure, lib/Configure.pm and Makefile.in
 * grampa -- Configure, lib/Configure.pm and Makefile.in
-* html-template -- Makefile.PL
 * io-prompt -- Configure.pl, lib/Configure.pm and Makefile.in
-* json -- Configure, lib/Configure.pm and Makefile.in
 * Perl6-Term--ANSIColor -- Configure.pl, lib/Configure.pm and Makefile.in
 * statistics-lite -- Makefile.PL and Makefile.in
 * Vector -- Configure, lib/Configure.pm and Makefile.in
