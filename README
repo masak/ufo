@@ -14,7 +14,12 @@ device...
 
 % ufo
 
-...and it would create the Makefile for me, using 'ambient information'.
+...and it would create the Makefile for me, using 'ambient information'. So
+normally you'd probably do
+
+% ufo && make
+
+to build your project.
 
 When they told me this, they had already beamed me up to their vessel and
 treated me to the best sirloin steak I've *ever* tasted, period. I was a little
