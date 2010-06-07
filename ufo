@@ -1,13 +1,23 @@
 #!/usr/bin/env perl6
 
+my $binary = 'perl6';
+if @*ARGS == 1 && @*ARGS[0] eq '--alpha' {
+    $binary = 'alpha';
+    note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
+}
+elsif @*ARGS {
+    note "Usage: ufo [--alpha]";
+    exit 1;
+}
+
 my $cwd = qx[pwd].chomp;
 
 if 'lib' !~~ :e {
-    say "lib/ doesn't exist. Nothing to do.";
+    note "lib/ doesn't exist. Nothing to do.";
     exit 1;
 }
 elsif 'lib' !~~ :d {
-    say "lib isn't a directory. Nothing to do.";
+    note "lib isn't a directory. Nothing to do.";
     exit 1;
 }
 
@@ -17,7 +27,7 @@ my @module-files = grep { $_ },
 
 if !@module-files
    || @module-files.elems == 1 && @module-files[0] ~~ /'no such file'/ {
-    say "Found no modules in lib/. Nothing to do.";
+    note "Found no modules in lib/. Nothing to do.";
     exit 1;
 }
 
@@ -82,7 +92,7 @@ for @sources -> $source {
 $sources.=trim-trailing;
 
 my $makefile = open 'Makefile', :w;
-$makefile.say(q[PERL6=perl6]);
+$makefile.say(qq[PERL6=$binary]);
 $makefile.say(qq[PERL6LIB='$cwd/lib']);
 $makefile.say(q[]);
 
