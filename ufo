@@ -49,22 +49,21 @@ my @order;
 
 # According to "Introduction to Algorithms" by Cormen et al., topological
 # sort is just a depth-first search of a graph where you pay attention to
-# the order in which you color the nodes black.
-my %color_of = @modules X=> 'white';
+# the order in which you get done with a dfs-visit() for each node.
+my %color_of = @modules X=> 'not yet visited';
 for @modules -> $module {
-    if %color_of{$module} eq 'white' {
+    if %color_of{$module} eq 'not yet visited' {
         dfs-visit($module);
     }
 }
 
 sub dfs-visit($module) {
-    %color_of{$module} = 'gray';
+    %color_of{$module} = 'visited';
     for %usages_of{$module}.list -> $used {
-        if %color_of{$used} eq 'white' {
+        if %color_of{$used} eq 'not yet visited' {
             dfs-visit($used);
         }
     }
-    %color_of{$module} = 'black';
     push @order, $module;
 }
 
