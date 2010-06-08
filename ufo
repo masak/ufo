@@ -101,6 +101,8 @@ $makefile.say($sources);
 $makefile.say(qq[
 PIRS=\$(patsubst %.pm6,%.pir,\$(SOURCES:.pm=.pir))
 
+.PHONY: test clean
+
 all: \$(PIRS)
 
 %.pir: %.pm
