@@ -41,7 +41,7 @@ for @module-files -> $module-file {
             next if $used eq 'v6';
             next if $used eq 'MONKEY_TYPING';
 
-            (%usages_of{$module} //= []).push($used);
+            (%usages_of{$module} //= []).push(~$used);
         }
     }
 }
