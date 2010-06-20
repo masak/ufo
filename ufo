@@ -1,5 +1,11 @@
 #!/usr/bin/env perl6
 
+# Some poor sods still have projects running only on the old Rakudo alpha
+# branch. This option is for them, so they won't have to hand-edit their
+# Makefile after generating it. Of course, ufo is all about *removing*
+# archaic pieces of culture, so let's work on converting things to Rakudo
+# master, as well.
+
 my $binary = 'perl6';
 if @*ARGS == 1 && @*ARGS[0] eq '--alpha' {
     $binary = 'alpha';
@@ -21,6 +27,9 @@ elsif 'lib' !~~ :d {
     exit 1;
 }
 
+# The grep is needed because 'find' prints a final newline, so there'll be an
+# empty-string element at the end of the list.
+
 my @module-files = grep { $_ },
                    split "\n",
                    qx[find lib -name \*.pm -or -name \*.pm6];
@@ -31,20 +40,30 @@ if !@module-files
     exit 1;
 }
 
+# To know the best order of compilation, we build a dependency graph of
+# all the modules in lib/. %usages_of ends up containing a graph, with
+# the keys (containing names modules) being nodes, and the values
+# (containing arrays of names) denoting directed edges.
+
 my @modules = map { path-to-module-name($_) }, @module-files;
 my %usages_of;
 for @module-files -> $module-file {
     my $fh = open($module-file, :r);
     my $module = path-to-module-name($module-file);
+    %usages_of{$module} = [];
     for $fh.lines() {
         if /^\s* 'use' \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
             next if $used eq 'v6';
             next if $used eq 'MONKEY_TYPING';
 
-            (%usages_of{$module} //= []).push(~$used);
+            %usages_of{$module}.push(~$used);
         }
     }
 }
+
+# Internally, we treat the module names as module names, '::' and all.
+# But since they're really files externally, they have to be converted
+# from paths to module names, and back again.
 
 sub path-to-module-name($path) {
     $path.subst(/^'lib/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
@@ -60,6 +79,7 @@ my @order;
 # According to "Introduction to Algorithms" by Cormen et al., topological
 # sort is just a depth-first search of a graph where you pay attention to
 # the order in which you get done with a dfs-visit() for each node.
+
 my %color_of = @modules X=> 'not yet visited';
 for @modules -> $module {
     if %color_of{$module} eq 'not yet visited' {
@@ -76,6 +96,9 @@ sub dfs-visit($module) {
     }
     push @order, $module;
 }
+
+# The intended effect of the below loop is to put as many module paths on
+# each line as possible, breaking when necessary, and indenting nicely.
 
 my @sources = map { &module-name-to-path($_) }, @order;
 my $sources = 'SOURCES=';
