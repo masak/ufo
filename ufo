@@ -13,7 +13,7 @@ if @*ARGS == 1 && @*ARGS[0] eq '--alpha' {
 }
 # RAKUDO: Should only need to test for @*ARGS being empty here, but a '-'
 # is erroneously added to @*ARGS when no args are sent in. [perl #76290]
-elsif @*ARGS != 1 || @*ARGS[0] ne '-' {
+elsif @*ARGS > 1 || @*ARGS[0] ne '-' {
     note "Usage: ufo [--alpha]";
     exit 1;
 }
