@@ -143,15 +143,31 @@ sub directory-of($file) {
     $file.subst(/ '/' <-[/]>*? $ /, '');
 }
 
+sub prefix($prefix, $str) {
+    my $index = $str.index($prefix);
+    return defined $index && $index == 0;
+}
+
 sub write-install($extension?) {
+    my %dirs;
+    # Find unique directory names and filter out only those who are not
+    # prefixes of other directories.
+    %dirs{$_} = 1 for @sources.map: { directory-of($^a) }
+    # Lexicographic sort places prefixes before the string they are a
+    # prefix of.
+    my $prev = '';
+    for %dirs.keys.sort -> $cur {
+        $makefile.say: "\tmkdir -p ~/.perl6/$cur" if not prefix($prev, $cur);
+        $prev = $cur;
+    }
+    $makefile.say: "\tmkdir -p ~/.perl6/$prev";
+
     for @sources -> $s {
         my $file = defined $extension
                     ?? $s.subst(rx{\.pm6?$}, '.' ~ $extension)
                     !! $s;
         # Can't use 'install -D' like we originally did, because Mac OS X
         # has that flag as '-d'.
-        my $directory = directory-of($file);
-        $makefile.say("\tmkdir -p ~/.perl6/$directory");
         $makefile.say("\tinstall $file ~/.perl6/$file");
     }
 }
