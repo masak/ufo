@@ -37,6 +37,11 @@ know all about quantum computing.
 'Yes. The build order will be optimized. Try not to think too much, it's
 not good for you.'
 
+'If I'm a module developer, do I commit the generated Makefile?'
+
+'No. The Makefile cannot be distributed. It is tailor-made for your local
+absolute paths.'
+
 I asked them why they had come all the way here to our planet to help us with
 Perl 6 project Makefiles. They looked knowingly at each other, and then went
 into a sort of song-and-dance act, which they really must have rehearsed
@@ -62,7 +67,6 @@ Except that I still carry this small device they gave me...
 
 * ABC -- Configure and Makefile.in
 * benchmark -- Configure.pl, lib/Configure.pm and Makefile.in
-* form -- Makefile.PL and Makefile.in
 * gge -- Configure, lib/Configure.pm and Makefile.in
 * grampa -- Configure, lib/Configure.pm and Makefile.in
 * io-prompt -- Configure.pl, lib/Configure.pm and Makefile.in
