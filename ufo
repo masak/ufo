@@ -140,7 +140,7 @@ test: all
 \tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/]);
 
 sub directory-of($file) {
-    $file.subst(/ '/' <-[/]>*? $ /, '');
+    $file.subst(/ <-[/]>* $ /, '');
 }
 
 sub prefix($prefix, $str) {
@@ -157,7 +157,7 @@ sub write-install($extension?) {
     # prefix of.
     my $prev = '';
     for %dirs.keys.sort -> $cur {
-        $makefile.say: "\tmkdir -p ~/.perl6/$cur" if not prefix($prev, $cur);
+        $makefile.say: "\tmkdir -p ~/.perl6/$prev" if not prefix($prev, $cur);
         $prev = $cur;
     }
     $makefile.say: "\tmkdir -p ~/.perl6/$prev";
