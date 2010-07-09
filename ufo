@@ -13,6 +13,31 @@ sub module-name-to-path($module-name) {
     $pm ~~ :e ?? $pm !! $pm ~ '6';
 }
 
+# According to "Introduction to Algorithms" by Cormen et al., topological
+# sort is just a depth-first search of a graph where you pay attention to
+# the order in which you get done with a dfs-visit() for each node.
+
+sub topo-sort(@modules, %dependencies) {
+    my %color_of = @modules X=> 'not yet visited';
+    for @modules -> $module {
+        if %color_of{$module} eq 'not yet visited' {
+            dfs-visit($module);
+        }
+    }
+
+    my @order;
+    sub dfs-visit($module) {
+        %color_of{$module} = 'visited';
+        for %dependencies{$module}.list -> $used {
+            if %color_of{$used} eq 'not yet visited' {
+                dfs-visit($used);
+            }
+        }
+        push @order, $module;
+    }
+    @order;
+}
+
 # Some poor sods still have projects running only on the old Rakudo alpha
 # branch. This option is for them, so they won't have to hand-edit their
 # Makefile after generating it. Of course, ufo is all about *removing*
@@ -67,28 +92,8 @@ sub MAIN(Bool :$alpha) {
         }
     }
 
-    my @order;
+    my @order = topo-sort(@modules, %usages_of);
 
-    # According to "Introduction to Algorithms" by Cormen et al., topological
-    # sort is just a depth-first search of a graph where you pay attention to
-    # the order in which you get done with a dfs-visit() for each node.
-
-    my %color_of = @modules X=> 'not yet visited';
-    for @modules -> $module {
-        if %color_of{$module} eq 'not yet visited' {
-            dfs-visit($module);
-        }
-    }
-
-    sub dfs-visit($module) {
-        %color_of{$module} = 'visited';
-        for %usages_of{$module}.list -> $used {
-            if %color_of{$used} eq 'not yet visited' {
-                dfs-visit($used);
-            }
-        }
-        push @order, $module;
-    }
 
     # The intended effect of the below loop is to put as many module paths on
     # each line as possible, breaking when necessary, and indenting nicely.
