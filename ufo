@@ -1,5 +1,18 @@
 #!/usr/bin/env perl6
 
+# Internally, we treat the module names as module names, '::' and all.
+# But since they're really files externally, they have to be converted
+# from paths to module names, and back again.
+
+sub path-to-module-name($path) {
+    $path.subst(/^'lib/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
+}
+
+sub module-name-to-path($module-name) {
+    my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
+    $pm ~~ :e ?? $pm !! $pm ~ '6';
+}
+
 # Some poor sods still have projects running only on the old Rakudo alpha
 # branch. This option is for them, so they won't have to hand-edit their
 # Makefile after generating it. Of course, ufo is all about *removing*
@@ -52,19 +65,6 @@ sub MAIN(Bool :$alpha) {
                 %usages_of{$module}.push(~$used);
             }
         }
-    }
-
-    # Internally, we treat the module names as module names, '::' and all.
-    # But since they're really files externally, they have to be converted
-    # from paths to module names, and back again.
-
-    sub path-to-module-name($path) {
-        $path.subst(/^'lib/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
-    }
-
-    sub module-name-to-path($module-name) {
-        my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
-        $pm ~~ :e ?? $pm !! $pm ~ '6';
     }
 
     my @order;
