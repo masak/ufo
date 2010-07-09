@@ -18,13 +18,6 @@ sub module-name-to-path($module-name) {
 # the order in which you get done with a dfs-visit() for each node.
 
 sub topo-sort(@modules, %dependencies) {
-    my %color_of = @modules X=> 'not yet visited';
-    for @modules -> $module {
-        if %color_of{$module} eq 'not yet visited' {
-            dfs-visit($module);
-        }
-    }
-
     my @order;
     sub dfs-visit($module) {
         %color_of{$module} = 'visited';
@@ -36,6 +29,13 @@ sub topo-sort(@modules, %dependencies) {
         push @order, $module;
     }
     @order;
+
+    my %color_of = @modules X=> 'not yet visited';
+    for @modules -> $module {
+        if %color_of{$module} eq 'not yet visited' {
+            dfs-visit($module);
+        }
+    }
 }
 
 # some utility functions
