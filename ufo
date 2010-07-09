@@ -38,6 +38,18 @@ sub topo-sort(@modules, %dependencies) {
     @order;
 }
 
+# some utility functions
+
+sub directory-of($file) {
+    $file.subst(/ <-[/]>* $ /, '');
+}
+
+sub prefix($prefix, $str) {
+    my $index = $str.index($prefix);
+    return defined $index && $index == 0;
+}
+
+
 # Some poor sods still have projects running only on the old Rakudo alpha
 # branch. This option is for them, so they won't have to hand-edit their
 # Makefile after generating it. Of course, ufo is all about *removing*
@@ -137,15 +149,6 @@ clean:
 
 test: all
 \tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/]);
-
-    sub directory-of($file) {
-        $file.subst(/ <-[/]>* $ /, '');
-    }
-
-    sub prefix($prefix, $str) {
-        my $index = $str.index($prefix);
-        return defined $index && $index == 0;
-    }
 
     sub write-install($extension?) {
         my %dirs;
