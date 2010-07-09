@@ -58,7 +58,9 @@ sub prefix($prefix, $str) {
 
 sub MAIN(Bool :$alpha) {
     my $binary = $alpha ?? 'alpha' !! 'perl6';
-    note "Using 'alpha' as the Perl 6 binary. Please upgrade your code." if $alpha;
+    if $alpha {
+        note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
+    }
 
     my $cwd = qx[pwd].chomp;
 
@@ -105,7 +107,6 @@ sub MAIN(Bool :$alpha) {
     }
 
     my @order = topo-sort(@modules, %usages_of);
-
 
     # The intended effect of the below loop is to put as many module paths on
     # each line as possible, breaking when necessary, and indenting nicely.
