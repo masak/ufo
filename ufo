@@ -28,7 +28,6 @@ sub topo-sort(@modules, %dependencies) {
         }
         push @order, $module;
     }
-    @order;
 
     my %color_of = @modules X=> 'not yet visited';
     for @modules -> $module {
@@ -36,6 +35,7 @@ sub topo-sort(@modules, %dependencies) {
             dfs-visit($module);
         }
     }
+    @order;
 }
 
 # some utility functions
