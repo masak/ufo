@@ -56,7 +56,7 @@ sub prefix($prefix, $str) {
 # archaic pieces of culture, so let's work on converting things to Rakudo
 # master, as well.
 
-sub MAIN(Bool :$alpha) {
+sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $binary = $alpha ?? 'alpha' !! 'perl6';
     if $alpha {
         note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
@@ -125,7 +125,7 @@ sub MAIN(Bool :$alpha) {
     }
     $sources.=trim-trailing;
 
-    my $makefile = open 'Makefile', :w;
+    my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
     $makefile.say(qq[PERL6=$binary]);
     $makefile.say(qq[PERL6LIB='$cwd/lib']);
     $makefile.say(q[]);
