@@ -176,7 +176,7 @@ test: all
     }
 
     $makefile.say(q[]);
-    $makefile.say(q[install: all]);
+    $makefile.say(q[install: all install-src]);
     write-install('pir');
 
     $makefile.say(q[]);
