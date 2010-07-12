@@ -132,9 +132,9 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 
     $makefile.say($sources);
 
-    $makefile.say(qq[
+    $makefile.say(qq{
 PIRS=\$(patsubst %.pm6,%.pir,\$(SOURCES:.pm=.pir))
-TESTS=\$(shell find t -name '*.t')
+TESTS=\$(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
 .PHONY: test clean
 
@@ -153,7 +153,7 @@ test: all
 \tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/
 
 \$(TESTS): all
-\tenv PERL6LIB=\$(PERL6LIB) prove -v -e '\$(PERL6)' -r --nocolor \$@]);
+\tenv PERL6LIB=\$(PERL6LIB) prove -v -e '\$(PERL6)' -r --nocolor \$@});
 
     sub write-install($extension?) {
         my %dirs;
