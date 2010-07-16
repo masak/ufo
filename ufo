@@ -127,27 +127,31 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
 
-    $makefile.say(qq{.PHONY: test clean
+    $makefile.say(qq{.PHONY: all build test install clean
 
-PERL6=$binary
-PERL6LIB=$cwd/t:$cwd/blib/lib:$cwd/lib
+PERL6 = $binary
+BLIB = blib
+PERL6LIB = $cwd/t:$cwd/\$(BLIB)/lib:$cwd/lib
 
 $sources
-PIRS=\$(patsubst %.pm6,%.pir,\$(SOURCES:%.pm=blib/%.pir))
-TESTS=\$(shell if [ -d 't' ]; then find t -name '*.t'; fi)
+PIRS = \$(patsubst %.pm6,%.pir,\$(SOURCES:%.pm=%.pir))
+BLIB_PIRS = \$(PIRS:%=\$(BLIB)/%)
+TESTS = \$(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
-all: \$(PIRS)
+all: build
 
-blib/%.pir: %.pm
+build: \$(BLIB_PIRS)
+
+\$(BLIB)/%.pir: %.pm
 \tmkdir -p `dirname '\$@'`
 \tenv PERL6LIB=\$(PERL6LIB) \$(PERL6) --target=pir --output=\$@ \$<
 
-blib/%.pir: %.pm6
+\$(BLIB)/%.pir: %.pm6
 \tmkdir -p `dirname '\$@'`
 \tenv PERL6LIB=\$(PERL6LIB) \$(PERL6) --target=pir --output=\$@ \$<
 
 clean:
-\trm -fr blib
+\trm -fr \$(BLIB)
 
 test: all
 \tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/
