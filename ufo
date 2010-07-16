@@ -127,7 +127,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
 
-    $makefile.say(qq{.PHONY: all build test install clean
+    $makefile.say(qq{.PHONY: all build test install clean distclean purge
 
 PERL6 = $binary
 BLIB = blib
@@ -152,6 +152,9 @@ build: \$(BLIB_PIRS)
 
 clean:
 \trm -fr \$(BLIB)
+
+distclean purge: clean
+\trm -fr Makefile
 
 test: all
 \tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/
