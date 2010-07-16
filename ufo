@@ -126,17 +126,15 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     $sources.=trim-trailing;
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
-    $makefile.say(qq[PERL6=$binary]);
-    $makefile.say(qq[PERL6LIB='$cwd/t:$cwd/blib/lib:$cwd/lib']);
-    $makefile.say(q[]);
 
-    $makefile.say($sources);
+    $makefile.say(qq{.PHONY: test clean
 
-    $makefile.say(qq{
+PERL6=$binary
+PERL6LIB=$cwd/t:$cwd/blib/lib:$cwd/lib
+
+$sources
 PIRS=\$(patsubst %.pm6,%.pir,\$(SOURCES:%.pm=blib/%.pir))
 TESTS=\$(shell if [ -d 't' ]; then find t -name '*.t'; fi)
-
-.PHONY: test clean
 
 all: \$(PIRS)
 
