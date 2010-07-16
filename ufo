@@ -38,17 +38,6 @@ sub topo-sort(@modules, %dependencies) {
     @order;
 }
 
-# some utility functions
-
-sub directory-of($file) {
-    $file.subst(/ <-[/]>* $ /, '');
-}
-
-sub prefix($prefix, $str) {
-    my $index = $str.index($prefix);
-    return defined $index && $index == 0;
-}
-
 
 # Some poor sods still have projects running only on the old Rakudo alpha
 # branch. This option is for them, so they won't have to hand-edit their
@@ -130,12 +119,15 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     $makefile.say(qq{.PHONY: all build test install clean distclean purge
 
 PERL6 = $binary
+PREFIX = ~/.perl6
 BLIB = blib
 PERL6LIB = $cwd/t:$cwd/\$(BLIB)/lib:$cwd/lib
 
 $sources
 PIRS = \$(patsubst %.pm6,%.pir,\$(SOURCES:%.pm=%.pir))
 BLIB_PIRS = \$(PIRS:%=\$(BLIB)/%)
+INSTALL_SOURCES = \$(SOURCES:%=\$(PREFIX)/%)
+INSTALL_PIRS = \$(PIRS:%=\$(PREFIX)/%)
 TESTS = \$(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
 all: build
@@ -160,40 +152,19 @@ test: all
 \tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/
 
 \$(TESTS): all
-\tenv PERL6LIB=\$(PERL6LIB) prove -v -e '\$(PERL6)' -r --nocolor \$@});
+\tenv PERL6LIB=\$(PERL6LIB) prove -v -e '\$(PERL6)' -r --nocolor \$@
 
-    sub write-install($extension?) {
-        my %dirs;
-        # Find unique directory names and filter out only those who are not
-        # prefixes of other directories.
-        %dirs{$_} = 1 for @sources.map: { directory-of($^a) }
-        # Lexicographic sort places prefixes before the string they are a
-        # prefix of.
-        my $prev = '';
-        for %dirs.keys.sort -> $cur {
-            $makefile.say: "\tmkdir -p ~/.perl6/$prev" if not prefix($prev, $cur);
-            $prev = $cur;
-        }
-        $makefile.say: "\tmkdir -p ~/.perl6/$prev";
+install:: \$(INSTALL_SOURCES) \$(INSTALL_PIRS)
 
-        for @sources -> $s {
-            my $file = defined $extension
-                        ?? $s.subst(rx{\.pm6?$}, '.' ~ $extension)
-                        !! $s;
-            # Can't use 'install -D' like we originally did, because Mac OS X
-            # has that flag as '-d'.
-            my $blib = $extension eq 'pir' ?? 'blib/' !! '';
-            $makefile.say("\tinstall $blib$file ~/.perl6/$file");
-        }
-    }
+\$(PREFIX)/%.pm: %.pm
+\tmkdir -p `dirname '\$@'`
+\tinstall \$< \$@
 
-    $makefile.say(q[]);
-    $makefile.say(q[install: all install-src]);
-    write-install('pir');
+\$(PREFIX)/%.pir: blib/%.pir
+\tmkdir -p `dirname '\$@'`
+\tinstall \$< \$@
+});
 
-    $makefile.say(q[]);
-    $makefile.say(q[install-src:]);
-    write-install();
 }
 
 # vim: ft=perl6
