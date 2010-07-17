@@ -71,8 +71,8 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     $makefile.print(
         makefile_template()\
             .subst(/^\n/, '')\
-            .subst(/'$binary'/, $binary)\
-            .subst(/'$sources'/, $sources)
+            .subst('$binary', $binary)\
+            .subst('$sources', $sources)
     );
 }
 
