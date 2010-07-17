@@ -17,38 +17,38 @@ INSTALL_SOURCES = $(SOURCES:%=$(PREFIX)/%)
 INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
 TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
-all: build
+all:: build
 
-build: $(BLIB_PIRS)
+build:: $(BLIB_PIRS)
 
-$(BLIB)/%.pir: %.pm
+$(BLIB)/%.pir:: %.pm
 	mkdir -p `dirname '$@'`
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
-$(BLIB)/%.pir: %.pm6
+$(BLIB)/%.pir:: %.pm6
 	mkdir -p `dirname '$@'`
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
-test: all
+test:: all
 	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r --nocolor t/
 
-$(TESTS): all
+$(TESTS):: all
 	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
 
 install:: $(INSTALL_SOURCES) $(INSTALL_PIRS)
 
-$(PREFIX)/%.pm: %.pm
+$(PREFIX)/%.pm:: %.pm
 	mkdir -p `dirname '$@'`
 	install $< $@
 
-$(PREFIX)/%.pir: blib/%.pir
+$(PREFIX)/%.pir:: blib/%.pir
 	mkdir -p `dirname '$@'`
 	install $< $@
 
-clean:
+clean::
 	rm -fr $(BLIB)
 
-distclean purge: clean
+distclean purge:: clean
 	rm -r Makefile
 }
 
