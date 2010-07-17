@@ -5,6 +5,7 @@ sub makefile_template() {
     return q{
 .PHONY: all build test install clean distclean purge
 
+UFO := $(shell which ufo)
 PERL6 = $binary
 PREFIX = ~/.perl6
 BLIB = blib
@@ -18,6 +19,9 @@ INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
 TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
 all:: build
+
+Makefile:: $(UFO)
+	ufo
 
 build:: $(BLIB_PIRS)
 
