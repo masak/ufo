@@ -58,12 +58,6 @@ distclean purge:: clean
 
 }
 
-# Some poor sods still have projects running only on the old Rakudo alpha
-# branch. This option is for them, so they won't have to hand-edit their
-# Makefile after generating it. Of course, ufo is all about *removing*
-# archaic pieces of culture, so let's work on converting things to Rakudo
-# master, as well.
-
 sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $binary = $alpha ?? 'alpha' !! 'perl6';
     if $alpha {
