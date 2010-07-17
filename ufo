@@ -8,7 +8,7 @@ sub makefile_template() {
 PERL6 = $binary
 PREFIX = ~/.perl6
 BLIB = blib
-PERL6LIB = $(PWD)/t:$(PWD)/$(BLIB)/lib:$(PWD)/lib
+P6LIB = $(PWD)/t:$(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
 
 $sources
 PIRS = $(patsubst %.pm6,%.pir,$(SOURCES:%.pm=%.pir))
@@ -23,17 +23,17 @@ build: $(BLIB_PIRS)
 
 $(BLIB)/%.pir: %.pm
 	mkdir -p `dirname '$@'`
-	env PERL6LIB=$(PERL6LIB) $(PERL6) --target=pir --output=$@ $<
+	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
 $(BLIB)/%.pir: %.pm6
 	mkdir -p `dirname '$@'`
-	env PERL6LIB=$(PERL6LIB) $(PERL6) --target=pir --output=$@ $<
+	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
 test: all
-	env PERL6LIB=$(PERL6LIB) prove -e '$(PERL6)' -r --nocolor t/
+	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r --nocolor t/
 
 $(TESTS): all
-	env PERL6LIB=$(PERL6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
+	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
 
 install:: $(INSTALL_SOURCES) $(INSTALL_PIRS)
 
