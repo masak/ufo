@@ -1,5 +1,59 @@
 #!/usr/bin/env perl6
 
+# This is the template for the entire generated Makefile.
+sub makefile_template() {
+    return q{
+.PHONY: all build test install clean distclean purge
+
+PERL6 = $binary
+PREFIX = ~/.perl6
+BLIB = blib
+PERL6LIB = $(PWD)/t:$(PWD)/$(BLIB)/lib:$(PWD)/lib
+
+$sources
+PIRS = $(patsubst %.pm6,%.pir,$(SOURCES:%.pm=%.pir))
+BLIB_PIRS = $(PIRS:%=$(BLIB)/%)
+INSTALL_SOURCES = $(SOURCES:%=$(PREFIX)/%)
+INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
+TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
+
+all: build
+
+build: $(BLIB_PIRS)
+
+$(BLIB)/%.pir: %.pm
+	mkdir -p `dirname '$@'`
+	env PERL6LIB=$(PERL6LIB) $(PERL6) --target=pir --output=$@ $<
+
+$(BLIB)/%.pir: %.pm6
+	mkdir -p `dirname '$@'`
+	env PERL6LIB=$(PERL6LIB) $(PERL6) --target=pir --output=$@ $<
+
+test: all
+	env PERL6LIB=$(PERL6LIB) prove -e '$(PERL6)' -r --nocolor t/
+
+$(TESTS): all
+	env PERL6LIB=$(PERL6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
+
+install:: $(INSTALL_SOURCES) $(INSTALL_PIRS)
+
+$(PREFIX)/%.pm: %.pm
+	mkdir -p `dirname '$@'`
+	install $< $@
+
+$(PREFIX)/%.pir: blib/%.pir
+	mkdir -p `dirname '$@'`
+	install $< $@
+
+clean:
+	rm -fr $(BLIB)
+
+distclean purge: clean
+	rm -r Makefile
+}
+
+}
+
 # Internally, we treat the module names as module names, '::' and all.
 # But since they're really files externally, they have to be converted
 # from paths to module names, and back again.
@@ -50,8 +104,6 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     if $alpha {
         note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
     }
-
-    my $cwd = qx[pwd].chomp;
 
     if 'lib' !~~ :e {
         note "lib/ doesn't exist. Nothing to do.";
@@ -116,55 +168,12 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
 
-    $makefile.say(qq{.PHONY: all build test install clean distclean purge
-
-PERL6 = $binary
-PREFIX = ~/.perl6
-BLIB = blib
-PERL6LIB = $cwd/t:$cwd/\$(BLIB)/lib:$cwd/lib
-
-$sources
-PIRS = \$(patsubst %.pm6,%.pir,\$(SOURCES:%.pm=%.pir))
-BLIB_PIRS = \$(PIRS:%=\$(BLIB)/%)
-INSTALL_SOURCES = \$(SOURCES:%=\$(PREFIX)/%)
-INSTALL_PIRS = \$(PIRS:%=\$(PREFIX)/%)
-TESTS = \$(shell if [ -d 't' ]; then find t -name '*.t'; fi)
-
-all: build
-
-build: \$(BLIB_PIRS)
-
-\$(BLIB)/%.pir: %.pm
-\tmkdir -p `dirname '\$@'`
-\tenv PERL6LIB=\$(PERL6LIB) \$(PERL6) --target=pir --output=\$@ \$<
-
-\$(BLIB)/%.pir: %.pm6
-\tmkdir -p `dirname '\$@'`
-\tenv PERL6LIB=\$(PERL6LIB) \$(PERL6) --target=pir --output=\$@ \$<
-
-clean:
-\trm -fr \$(BLIB)
-
-distclean purge: clean
-\trm -fr Makefile
-
-test: all
-\tenv PERL6LIB=\$(PERL6LIB) prove -e '\$(PERL6)' -r --nocolor t/
-
-\$(TESTS): all
-\tenv PERL6LIB=\$(PERL6LIB) prove -v -e '\$(PERL6)' -r --nocolor \$@
-
-install:: \$(INSTALL_SOURCES) \$(INSTALL_PIRS)
-
-\$(PREFIX)/%.pm: %.pm
-\tmkdir -p `dirname '\$@'`
-\tinstall \$< \$@
-
-\$(PREFIX)/%.pir: blib/%.pir
-\tmkdir -p `dirname '\$@'`
-\tinstall \$< \$@
-});
-
+    $makefile.print(
+        makefile_template()\
+            .subst(/^\n/, '')\
+            .subst(/'$binary'/, $binary)\
+            .subst(/'$sources'/, $sources)
+    );
 }
 
 # vim: ft=perl6
