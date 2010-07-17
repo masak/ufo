@@ -33,13 +33,13 @@ $(BLIB)/%.pir:: %.pm6
 	mkdir -p `dirname '$@'`
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
-test:: all
+test:: build
 	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r --nocolor t/
 
-$(TESTS):: all
+$(TESTS):: build
 	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
 
-install:: $(INSTALL_SOURCES) $(INSTALL_PIRS)
+install:: build $(INSTALL_SOURCES) $(INSTALL_PIRS)
 
 $(PREFIX)/%.pm:: %.pm
 	mkdir -p `dirname '$@'`
