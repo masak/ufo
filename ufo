@@ -77,11 +77,11 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 }
 
 sub get_sources() {
-    if 'lib' !~~ :e {
+    if 'lib'.IO !~~ :e {
         note "lib/ doesn't exist. Nothing to do.";
         exit 1;
     }
-    elsif 'lib' !~~ :d {
+    elsif 'lib'.IO !~~ :d {
         note "lib isn't a directory. Nothing to do.";
         exit 1;
     }
@@ -150,7 +150,7 @@ sub path-to-module-name($path) {
 
 sub module-name-to-path($module-name) {
     my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
-    $pm ~~ :e ?? $pm !! $pm ~ '6';
+    $pm.IO ~~ :e ?? $pm !! $pm ~ '6';
 }
 
 # According to "Introduction to Algorithms" by Cormen et al., topological
