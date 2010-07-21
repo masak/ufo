@@ -58,12 +58,6 @@ distclean purge:: clean
 
 }
 
-# Some poor sods still have projects running only on the old Rakudo alpha
-# branch. This option is for them, so they won't have to hand-edit their
-# Makefile after generating it. Of course, ufo is all about *removing*
-# archaic pieces of culture, so let's work on converting things to Rakudo
-# master, as well.
-
 sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $binary = $alpha ?? 'alpha' !! 'perl6';
     if $alpha {
@@ -77,17 +71,17 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     $makefile.print(
         makefile_template()\
             .subst(/^\n/, '')\
-            .subst(/'$binary'/, $binary)\
-            .subst(/'$sources'/, $sources)
+            .subst('$binary', $binary)\
+            .subst('$sources', $sources)
     );
 }
 
 sub get_sources() {
-    if 'lib' !~~ :e {
+    if 'lib'.IO !~~ :e {
         note "lib/ doesn't exist. Nothing to do.";
         exit 1;
     }
-    elsif 'lib' !~~ :d {
+    elsif 'lib'.IO !~~ :d {
         note "lib isn't a directory. Nothing to do.";
         exit 1;
     }
@@ -156,7 +150,7 @@ sub path-to-module-name($path) {
 
 sub module-name-to-path($module-name) {
     my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
-    $pm ~~ :e ?? $pm !! $pm ~ '6';
+    $pm.IO ~~ :e ?? $pm !! $pm ~ '6';
 }
 
 # According to "Introduction to Algorithms" by Cormen et al., topological

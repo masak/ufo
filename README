@@ -63,25 +63,22 @@ archaic technology.
 And no-one would believe that my story was anything but a dream.
 Except that I still carry this small device they gave me...
 
-+== SYNOPSIS
+== SYNOPSIS
 
-My friend Ingy, concerned for my mental well-being, wrote this little
-cheatsheet to help other humans use the device:
+My friend Ingy, who has lots of prior experience with alien technology, wrote
+this little cheatsheet to help other humans use the device:
 
-    > ufo                   # (re)Write the Makefile
-    > make                  # Compile your Perl 6 libraries to PIR
-    > make all              # Same as above
-    > make build            # Same as above
-    > make test             # Run your unit tests
-    > make install          # Install your Perl6 (and PIR)
-                            # Don't use sudo. You don't need to.
-    > PREFIX=somewhere/else make -e install
-                            # Install your modules somewhere else
-    > make clean            # Clean up leftovers
-    > make distclean        # Make clean and remove the Makefile
-    > make purge            # Same as above
-    > ufo && make test install purge
-                            # Do it all and leave no trace.
+    % ufo                      # (re)write the Makefile
+    % make                     # compile your Perl 6 libraries to PIR
+    % make all                 # ditto
+    % make build               # ditto
+    % make test                # run your unit tests
+    % make install             # install your source/PIR (no need to sudo)
+    % PREFIX=somewhere/else make -e install # install somewhere else
+    % make clean               # clean up leftovers
+    % make distclean           # make clean and remove the Makefile
+    % make purge               # ditto
+    % ufo && make test install purge # do it all and leave no trace
 
 == Repositories that still use human technology
 
