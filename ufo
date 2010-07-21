@@ -9,7 +9,7 @@ UFO := $(shell which ufo)
 PERL6 = $binary
 PREFIX = ~/.perl6
 BLIB = blib
-P6LIB = $(PWD)/t:$(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
+P6LIB = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
 
 $sources
 PIRS = $(patsubst %.pm6,%.pir,$(SOURCES:%.pm=%.pir))
