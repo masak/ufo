@@ -45,6 +45,10 @@ $(PREFIX)/%.pm:: %.pm
 	mkdir -p `dirname '$@'`
 	install $< $@
 
+$(PREFIX)/%.pm6:: %.pm6
+	mkdir -p `dirname '$@'`
+	install $< $@
+
 $(PREFIX)/%.pir:: blib/%.pir
 	mkdir -p `dirname '$@'`
 	install $< $@
