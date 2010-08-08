@@ -82,7 +82,6 @@ this little cheatsheet to help other humans use the device:
 
 == Repositories that still use human technology
 
-* ABC -- Configure and Makefile.in
 * benchmark -- Configure.pl, lib/Configure.pm and Makefile.in
 * grampa -- Configure, lib/Configure.pm and Makefile.in
 * io-prompt -- Configure.pl, lib/Configure.pm and Makefile.in
