@@ -12,9 +12,11 @@ BLIB = blib
 P6LIB = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
 
 $sources
+$scripts
 PIRS = $(patsubst %.pm6,%.pir,$(SOURCES:%.pm=%.pir))
 BLIB_PIRS = $(PIRS:%=$(BLIB)/%)
 INSTALL_SOURCES = $(SOURCES:%=$(PREFIX)/%)
+INSTALL_SCRIPTS = $(SCRIPTS:%=$(PREFIX)/%)
 INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
 TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
@@ -39,7 +41,7 @@ test:: build
 $(TESTS):: build
 	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
 
-install:: build $(INSTALL_SOURCES) $(INSTALL_PIRS)
+install:: build $(INSTALL_SOURCES) $(INSTALL_PIRS) $(INSTALL_SCRIPTS)
 
 $(PREFIX)/%.pm:: %.pm
 	mkdir -p `dirname '$@'`
@@ -50,6 +52,10 @@ $(PREFIX)/%.pm6:: %.pm6
 	install $< $@
 
 $(PREFIX)/%.pir:: blib/%.pir
+	mkdir -p `dirname '$@'`
+	install $< $@
+
+$(PREFIX)/bin/%:: bin/%
 	mkdir -p `dirname '$@'`
 	install $< $@
 
@@ -69,6 +75,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     }
 
     my $sources = get_sources();
+    my $scripts = get_scripts();
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
 
@@ -76,8 +83,16 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
         makefile_template()\
             .subst(/^\n/, '')\
             .subst('$binary', $binary)\
-            .subst('$sources', $sources)
+            .subst('$sources', $sources)\
+            .subst('$scripts', $scripts)
     );
+}
+
+sub get_scripts() {
+    if 'lib'.IO ~~ :d {
+        return 'SCRIPTS=' ~ qx[echo bin/*].chomp;
+    }
+    return Nil;
 }
 
 sub get_sources() {
