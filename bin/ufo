@@ -89,10 +89,11 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 }
 
 sub get_scripts() {
+    my $ret = 'SCRIPTS=';
     if 'bin'.IO ~~ :d {
-        return 'SCRIPTS=' ~ qx[echo bin/*].chomp;
+        $ret ~= qx[echo bin/*].chomp;
     }
-    return Nil;
+    return $ret;
 }
 
 sub get_sources() {
