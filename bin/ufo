@@ -89,22 +89,14 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 }
 
 sub get_scripts() {
-    if 'lib'.IO ~~ :d {
+    if 'bin'.IO ~~ :d {
         return 'SCRIPTS=' ~ qx[echo bin/*].chomp;
     }
     return Nil;
 }
 
 sub get_sources() {
-    if 'lib'.IO !~~ :e {
-        note "lib/ doesn't exist. Nothing to do.";
-        exit 1;
-    }
-    elsif 'lib'.IO !~~ :d {
-        note "lib isn't a directory. Nothing to do.";
-        exit 1;
-    }
-
+    return 'SOURCES=' unless 'lib/'.IO ~~ :d;
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
@@ -112,12 +104,7 @@ sub get_sources() {
                     split "\n",
                     qx[find lib -name \*.pm -or -name \*.pm6];
 
-    if !@module-files || @module-files[0].lc ~~ /'no such file'/ {
-        note "Found no modules in lib/. Nothing to do.";
-        exit 1;
-    }
-
-    # To know the best order of compilation, we build a dependency graph of
+   # To know the best order of compilation, we build a dependency graph of
     # all the modules in lib/. %usages_of ends up containing a graph, with
     # the keys (containing names modules) being nodes, and the values
     # (containing arrays of names) denoting directed edges.
