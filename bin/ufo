@@ -86,6 +86,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
             .subst('$sources', $sources)\
             .subst('$scripts', $scripts)
     );
+    $makefile.close;
 }
 
 sub get_scripts() {
@@ -105,7 +106,7 @@ sub get_sources() {
                     split "\n",
                     qx[find lib -name \*.pm -or -name \*.pm6];
 
-   # To know the best order of compilation, we build a dependency graph of
+    # To know the best order of compilation, we build a dependency graph of
     # all the modules in lib/. %usages_of ends up containing a graph, with
     # the keys (containing names modules) being nodes, and the values
     # (containing arrays of names) denoting directed edges.
