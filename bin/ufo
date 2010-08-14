@@ -36,10 +36,10 @@ $(BLIB)/%.pir:: %.pm6
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
 test:: build
-	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r --nocolor t/
+	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r t/
 
 $(TESTS):: build
-	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
+	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r $@
 
 install:: build $(INSTALL_SOURCES) $(INSTALL_PIRS) $(INSTALL_SCRIPTS)
 
