@@ -15,6 +15,7 @@ $sources
 $scripts
 PIRS = $(patsubst %.pm6,%.pir,$(SOURCES:%.pm=%.pir))
 BLIB_PIRS = $(PIRS:%=$(BLIB)/%)
+BLIB_PMS = $(SOURCES:%=$(BLIB)/%)
 INSTALL_SOURCES = $(SOURCES:%=$(PREFIX)/%)
 INSTALL_SCRIPTS = $(SCRIPTS:%=$(PREFIX)/%)
 INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
@@ -25,7 +26,15 @@ all:: build
 Makefile:: $(UFO)
 	ufo
 
-build:: $(BLIB_PIRS)
+build:: $(BLIB_PIRS) $(BLIB_PMS)
+
+$(BLIB)/%.pm:: %.pm
+	mkdir -p `dirname '$@'`
+	cp $< $@
+
+$(BLIB)/%.pm6:: %.pm6
+	mkdir -p `dirname '$@'`
+	cp $< $@
 
 $(BLIB)/%.pir:: %.pm
 	mkdir -p `dirname '$@'`
