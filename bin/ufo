@@ -5,7 +5,6 @@ sub makefile_template() {
     return q{
 .PHONY: all build test install clean distclean purge
 
-UFO := $(shell which ufo)
 PERL6 = $binary
 PREFIX = ~/.perl6
 BLIB = blib
@@ -22,9 +21,6 @@ INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
 TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
 all:: build
-
-Makefile:: $(UFO)
-	ufo
 
 build:: $(BLIB_PIRS) $(BLIB_PMS)
 
@@ -45,10 +41,10 @@ $(BLIB)/%.pir:: %.pm6
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
 test:: build
-	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r --nocolor t/
+	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r t/
 
 $(TESTS):: build
-	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r --nocolor $@
+	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r $@
 
 install:: build $(INSTALL_SOURCES) $(INSTALL_PIRS) $(INSTALL_SCRIPTS)
 
@@ -95,6 +91,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
             .subst('$sources', $sources)\
             .subst('$scripts', $scripts)
     );
+    $makefile.close;
 }
 
 sub get_scripts() {
@@ -114,7 +111,7 @@ sub get_sources() {
                     split "\n",
                     qx[find lib -name \*.pm -or -name \*.pm6];
 
-   # To know the best order of compilation, we build a dependency graph of
+    # To know the best order of compilation, we build a dependency graph of
     # all the modules in lib/. %usages_of ends up containing a graph, with
     # the keys (containing names modules) being nodes, and the values
     # (containing arrays of names) denoting directed edges.
