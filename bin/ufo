@@ -103,13 +103,22 @@ sub get_scripts() {
 }
 
 sub get_sources() {
-    return 'SOURCES=' unless 'lib/'.IO ~~ :d;
+    return 'SOURCES=' unless 'lib/'.IO ~~ :d || 'lib6/'.IO ~~ :d;
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
-    my @module-files = grep { $_ },
-                    split "\n",
-                    qx[find lib -name \*.pm -or -name \*.pm6];
+    my @module-files;
+    if 'lib/'.IO ~~ :d {
+        @module-files.push: grep { $_ },
+                            split "\n",
+                            qx[find lib -name \*.pm -or -name \*.pm6];
+    }
+    if 'lib6/'.IO ~~ :d {
+        @module-files.push: grep { $_ },
+                            split "\n",
+                            qx[find lib6 -name \*.pm -or -name \*.pm6];
+
+    }
 
     # To know the best order of compilation, we build a dependency graph of
     # all the modules in lib/. %usages_of ends up containing a graph, with
@@ -117,6 +126,7 @@ sub get_sources() {
     # (containing arrays of names) denoting directed edges.
 
     my @modules = map { path-to-module-name($_) }, @module-files;
+    my %module-to-path = @modules Z=> @module-files;
     my %usages_of;
     for @module-files -> $module-file {
         my $fh = open($module-file, :r);
@@ -137,7 +147,7 @@ sub get_sources() {
     # The intended effect of the below loop is to put as many module paths on
     # each line as possible, breaking when necessary, and indenting nicely.
 
-    my @sources = map { &module-name-to-path($_) }, @order;
+    my @sources = map { %module-to-path{$_} }, @order;
     my $sources = 'SOURCES=';
     my $line-length = 0;
     for @sources -> $source {
@@ -158,13 +168,13 @@ sub get_sources() {
 # from paths to module names, and back again.
 
 sub path-to-module-name($path) {
-    $path.subst(/^'lib/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
+    $path.subst(/^'lib/'/, '').subst(/^'lib6/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
 }
 
-sub module-name-to-path($module-name) {
-    my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
-    $pm.IO ~~ :e ?? $pm !! $pm ~ '6';
-}
+# sub module-name-to-path($module-name) {
+#     my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
+#     $pm.IO ~~ :e ?? $pm !! $pm ~ '6';
+# }
 
 # According to "Introduction to Algorithms" by Cormen et al., topological
 # sort is just a depth-first search of a graph where you pay attention to
