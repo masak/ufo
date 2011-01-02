@@ -171,11 +171,6 @@ sub path-to-module-name($path) {
     $path.subst(/^'lib/'/, '').subst(/^'lib6/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
 }
 
-# sub module-name-to-path($module-name) {
-#     my $pm = 'lib/' ~ $module-name.subst('::', '/', :g) ~ '.pm';
-#     $pm.IO ~~ :e ?? $pm !! $pm ~ '6';
-# }
-
 # According to "Introduction to Algorithms" by Cormen et al., topological
 # sort is just a depth-first search of a graph where you pay attention to
 # the order in which you get done with a dfs-visit() for each node.
