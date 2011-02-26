@@ -43,6 +43,9 @@ $(BLIB)/%.pir:: %.pm6
 test:: build
 	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r t/
 
+loudtest:: build
+	env PERL6LIB=$(P6LIB) prove -ve '$(PERL6)' -r t/
+
 $(TESTS):: build
 	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r $@
 
