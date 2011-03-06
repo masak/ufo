@@ -73,6 +73,8 @@ this little cheatsheet to help other humans use the device:
     % make all                 # ditto
     % make build               # ditto
     % make test                # run your unit tests
+    % make loudtest            # like test, but do not supress the TAP output
+    % make timetest            # like loudtest, but with timings
     % make install             # install your source/PIR (no need to sudo)
     % PREFIX=somewhere/else make -e install # install somewhere else
     % make clean               # clean up leftovers
