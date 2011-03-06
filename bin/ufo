@@ -46,6 +46,9 @@ test:: build
 loudtest:: build
 	env PERL6LIB=$(P6LIB) prove -ve '$(PERL6)' -r t/
 
+timetest:: build
+	env PERL6LIB=$(P6LIB) PERL6_TEST_TIMES=1 prove -ve '$(PERL6)' -r t/
+
 $(TESTS):: build
 	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r $@
 
