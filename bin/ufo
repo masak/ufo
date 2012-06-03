@@ -131,7 +131,7 @@ sub get_sources() {
     # the keys (containing names modules) being nodes, and the values
     # (containing arrays of names) denoting directed edges.
 
-    my @modules = map { path-to-module-name($_) }, @module-files;
+    my @modules = map &path-to-module-name, @module-files;
     my %module-to-path = @modules Z=> @module-files;
     my %usages_of;
     for @module-files -> $module-file {
