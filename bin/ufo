@@ -139,7 +139,7 @@ sub get_sources() {
         my $module = path-to-module-name($module-file);
         %usages_of{$module} = [];
         for $fh.lines() {
-            if /^\s* 'use' \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
+            if /^\s* ['use'|'need'|'require'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
                 next if $used eq 'v6';
                 next if $used eq 'MONKEY_TYPING';
 
