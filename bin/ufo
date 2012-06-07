@@ -5,11 +5,12 @@ sub makefile_template() {
     return q{
 .PHONY: all build test install clean distclean purge
 
-PERL6 = $binary
+PERL6  = $binary
 PREFIX = $(HOME)/.perl6
-BLIB = blib
-P6LIB = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
-CP = cp -p
+BLIB   = blib
+P6LIB  = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
+CP     = cp -p
+MKDIR  = mkdir -p
 
 $sources
 $scripts
@@ -70,8 +71,23 @@ sub get_scripts() {
     return $ret;
 }
 
+class Module {
+    has $.sourcefile;
+    has @.dependencies;
+    method name     { path-to-module-name($.sourcefile) }
+    method blib-pm  { q[$(BLIB)/] ~ $.sourcefile }
+    method blib-pir { $.blib-pm.subst(rx/\.pm6?$/, '.pir') }
+    method blib-dir { $.blib-pm.subst(rx{<-[/]>+$}, '') }
+    method buildrule {
+        my $header  = join(' ', $.blib-pir, ':', $.blib-pm, @.dependencies.map: *.blib-pir);
+        my $mkdir   = q[$(MKDIR) ] ~ self.blib-dir;
+        my $compile = "\$(PERL6) --target=pir --output=$.blib-pir $.sourcefile";
+        return "$header\n\t$mkdir\n\t$compile";
+    }
+}
+
 sub get_sources() {
-    return 'SOURCES=' unless 'lib/'.IO ~~ :d || 'lib6/'.IO ~~ :d;
+    return () unless 'lib/'.IO ~~ :d || 'lib6/'.IO ~~ :d;
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
