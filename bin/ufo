@@ -87,7 +87,7 @@ class Module {
         my $header  = join(' ', $.blib-pir, ':', $.lib-pm, @.dependencies.map: *.blib-pir);
         my $mkdir   = q[$(MKDIR) ] ~ $.blib-dir;
         my $copy    = join ' ', '$(CP)', $.lib-pm, $.blib-pm;
-        my $compile = "\$(PERL6) --target=pir --output=$.blib-pir $.lib-pm";
+        my $compile = "PERL6LIB=\$(P6LIB) \$(PERL6) --target=pir --output=$.blib-pir $.lib-pm";
         return "$header\n\t$mkdir\n\t$copy\n\t$compile\n";
     }
 
