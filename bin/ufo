@@ -22,7 +22,7 @@ TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
 all:: build
 
-build:: $(BLIB_PIRS) $(BLIB_PMS)
+build:: $(BLIB_PMS) $(BLIB_PIRS)
 
 $(BLIB)/%.pm:: %.pm
 	mkdir -p `dirname '$@'`
