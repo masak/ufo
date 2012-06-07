@@ -53,6 +53,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $build_rules = join "\n", @modules>>.buildrule;
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
+    my $install_rules = join '', @modules>>.install-rule;
 
     $makefile.print(
         makefile_template()\
@@ -60,6 +61,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
             .subst('$binary', $binary)\
             .subst('$blib_pirs', $blib_pirs)\
             .subst('$build_rules', $build_rules)\
+            .subst('$install_rules', $install_rules)\
             .subst('$scripts', $scripts)
     );
     $makefile.close;
@@ -77,14 +79,26 @@ class Module {
     has $.lib-pm;
     has @.dependencies is rw;
     method name     { path-to-module-name($.lib-pm) }
+    method lib-dir  { $.lib-pm.subst(rx{<-[/]>+$}, '') }
     method blib-pm  { q[$(BLIB)/] ~ $.lib-pm }
     method blib-pir { $.blib-pm.subst(rx/\.pm6?$/, '.pir') }
     method blib-dir { $.blib-pm.subst(rx{<-[/]>+$}, '') }
     method buildrule {
         my $header  = join(' ', $.blib-pir, ':', $.lib-pm, @.dependencies.map: *.blib-pir);
-        my $mkdir   = q[$(MKDIR) ] ~ self.blib-dir;
+        my $mkdir   = q[$(MKDIR) ] ~ $.blib-dir;
+        my $copy    = join ' ', '$(CP)', $.lib-pm, $.blib-pm;
         my $compile = "\$(PERL6) --target=pir --output=$.blib-pir $.lib-pm";
-        return "$header\n\t$mkdir\n\t$compile\n";
+        return "$header\n\t$mkdir\n\t$copy\n\t$compile\n";
+    }
+
+    method install-pir { '$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, '.pir') }
+    method install-pm  { '$(PREFIX)/' ~  $.lib-pm }
+    method install-rule {
+        join '',
+            map { "\t$_\n" },
+            '$(MKDIR) ' ~ $.lib-dir,
+            '$(CP) ' ~ $.blib-pm  ~ ' ' ~ $.install-pm,
+            '$(CP) ' ~ $.blib-pir ~ ' ' ~ $.install-pir;
     }
 }
 
@@ -105,7 +119,6 @@ sub get_modules() {
 
     }
     my @modules = @module-files.map: {Module.new(lib-pm => $_)};
-    say @modules.perl;
     my %modules-by-name = @modules>>.name Z @modules;
     for @modules {
         .dependencies.push: %modules-by-name{ dependencies(.lib-pm) };
