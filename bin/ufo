@@ -3,77 +3,69 @@
 # This is the template for the entire generated Makefile.
 sub makefile_template() {
     return q{
-.PHONY: all build test install clean distclean purge
+.PHONY : all build test install clean distclean purge
 
-PERL6 = $binary
-PREFIX = ~/.perl6
-BLIB = blib
-P6LIB = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
+PERL6 := $binary
+PREFIX := $(HOME)/.perl6
+BLIB := blib
+P6LIB := $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
 
-$sources
-$scripts
-PIRS = $(patsubst %.pm6,%.pir,$(SOURCES:%.pm=%.pir))
-BLIB_PIRS = $(PIRS:%=$(BLIB)/%)
-BLIB_PMS = $(SOURCES:%=$(BLIB)/%)
-INSTALL_SOURCES = $(SOURCES:%=$(PREFIX)/%)
-INSTALL_SCRIPTS = $(SCRIPTS:%=$(PREFIX)/%)
-INSTALL_PIRS = $(PIRS:%=$(PREFIX)/%)
+SOURCES := $sources
+SCRIPTS := $scripts
+PMS := $(filter %.pm,$(SOURCES))
+PM6S := $(filter %.pm6,$(SOURCES))
+
+BLIB_SOURCES := $(SOURCES:%=$(BLIB)/%)
+BLIB_PIRS := $(PMS:%.pm=$(BLIB)/%.pir) $(PM6S:%.pm6=$(BLIB)/%.pir)
+BLIB_FILES := $(BLIB_SOURCES) $(BLIB_PIRS)
+
+INSTALL_SOURCES := $(SOURCES:%=$(PREFIX)/%)
+INSTALL_SCRIPTS := $(SCRIPTS:%=$(PREFIX)/%)
+INSTALL_PIRS := $(BLIB_PIRS:$(BLIB)/%=$(PREFIX)/%)
+INSTALL_FILES := $(INSTALL_SOURCES) $(INSTALL_SCRIPTS) $(INSTALL_PIRS)
+
 TESTS = $(shell if [ -d 't' ]; then find t -name '*.t'; fi)
 
-all:: build
+all build : $(BLIB_FILES)
 
-build:: $(BLIB_PMS) $(BLIB_PIRS)
-
-$(BLIB)/%.pm:: %.pm
-	mkdir -p `dirname '$@'`
+$(BLIB_SOURCES) : $(BLIB)/% : %
+	mkdir -p $(dir $@)
 	cp $< $@
 
-$(BLIB)/%.pm6:: %.pm6
-	mkdir -p `dirname '$@'`
-	cp $< $@
-
-$(BLIB)/%.pir:: %.pm
-	mkdir -p `dirname '$@'`
+$(PMS:%.pm=$(BLIB)/%.pir) : $(BLIB)/%.pir : %.pm
+	mkdir -p $(dir $@)
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
-$(BLIB)/%.pir:: %.pm6
-	mkdir -p `dirname '$@'`
+$(PM6S:%.pm6=$(BLIB)/%.pir) : $(BLIB)/%.pir : %.pm6
+	mkdir -p $(dir $@)
 	env PERL6LIB=$(P6LIB) $(PERL6) --target=pir --output=$@ $<
 
-test:: build
+test : $(BLIB_FILES)
 	env PERL6LIB=$(P6LIB) prove -e '$(PERL6)' -r t/
 
-loudtest:: build
+loudtest : $(BLIB_FILES)
 	env PERL6LIB=$(P6LIB) prove -ve '$(PERL6)' -r t/
 
-timetest:: build
+timetest : $(BLIB_FILES)
 	env PERL6LIB=$(P6LIB) PERL6_TEST_TIMES=1 prove -ve '$(PERL6)' -r t/
 
-$(TESTS):: build
-	env PERL6LIB=$(P6LIB) prove -v -e '$(PERL6)' -r $@
+$(TESTS) : $(BLIB_FILES)
+	env PERL6LIB=$(P6LIB) prove -ve '$(PERL6)' -r $@
 
-install:: build $(INSTALL_SOURCES) $(INSTALL_PIRS) $(INSTALL_SCRIPTS)
+install : $(INSTALL_FILES)
 
-$(PREFIX)/%.pm:: %.pm
-	mkdir -p `dirname '$@'`
+$(INSTALL_SOURCES) $(INSTALL_SCRIPTS) : $(PREFIX)/% : %
+	mkdir -p $(dir $@)
 	install $< $@
 
-$(PREFIX)/%.pm6:: %.pm6
-	mkdir -p `dirname '$@'`
+$(INSTALL_PIRS) : $(PREFIX)/% : $(BLIB)/%
+	mkdir -p $(dir $@)
 	install $< $@
 
-$(PREFIX)/%.pir:: blib/%.pir
-	mkdir -p `dirname '$@'`
-	install $< $@
-
-$(PREFIX)/bin/%:: bin/%
-	mkdir -p `dirname '$@'`
-	install $< $@
-
-clean::
+clean :
 	rm -fr $(BLIB)
 
-distclean purge:: clean
+distclean purge : clean
 	rm -r Makefile
 }
 
@@ -101,7 +93,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 }
 
 sub get_scripts() {
-    my $ret = 'SCRIPTS=';
+    my $ret = '';
     if 'bin'.IO ~~ :d {
         $ret ~= qx[echo bin/*].chomp;
     }
@@ -109,7 +101,7 @@ sub get_scripts() {
 }
 
 sub get_sources() {
-    return 'SOURCES=' unless 'lib/'.IO ~~ :d || 'lib6/'.IO ~~ :d;
+    return '' unless 'lib/'.IO ~~ :d || 'lib6/'.IO ~~ :d;
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
@@ -154,7 +146,7 @@ sub get_sources() {
     # each line as possible, breaking when necessary, and indenting nicely.
 
     my @sources = map { %module-to-path{$_} }, @order;
-    my $sources = 'SOURCES=';
+    my $sources = '';
     my $line-length = 0;
     for @sources -> $source {
         $line-length += $source.chars + 1;
