@@ -12,9 +12,7 @@ P6LIB  = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
 CP     = cp -p
 MKDIR  = mkdir -p
 
-$sources
 $scripts
-$blib_sources
 $blib_pirs
 
 all build: $(BLIB_PIRS)
@@ -48,8 +46,11 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
         note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
     }
 
-    my $sources = get_sources();
+    my @modules = get_modules();
     my $scripts = get_scripts();
+
+    my $blib_pirs = join ' ', 'BLIB_PIRS =', @modules>>.blib-pir;
+    my $build_rules = join "\n", @modules>>.buildrule;
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
 
@@ -57,7 +58,8 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
         makefile_template()\
             .subst(/^\n/, '')\
             .subst('$binary', $binary)\
-            .subst('$sources', $sources)\
+            .subst('$blib_pirs', $blib_pirs)\
+            .subst('$build_rules', $build_rules)\
             .subst('$scripts', $scripts)
     );
     $makefile.close;
@@ -72,22 +74,21 @@ sub get_scripts() {
 }
 
 class Module {
-    has $.sourcefile;
-    has @.dependencies;
-    method name     { path-to-module-name($.sourcefile) }
-    method blib-pm  { q[$(BLIB)/] ~ $.sourcefile }
+    has $.lib-pm;
+    has @.dependencies is rw;
+    method name     { path-to-module-name($.lib-pm) }
+    method blib-pm  { q[$(BLIB)/] ~ $.lib-pm }
     method blib-pir { $.blib-pm.subst(rx/\.pm6?$/, '.pir') }
     method blib-dir { $.blib-pm.subst(rx{<-[/]>+$}, '') }
     method buildrule {
-        my $header  = join(' ', $.blib-pir, ':', $.blib-pm, @.dependencies.map: *.blib-pir);
+        my $header  = join(' ', $.blib-pir, ':', $.lib-pm, @.dependencies.map: *.blib-pir);
         my $mkdir   = q[$(MKDIR) ] ~ self.blib-dir;
-        my $compile = "\$(PERL6) --target=pir --output=$.blib-pir $.sourcefile";
-        return "$header\n\t$mkdir\n\t$compile";
+        my $compile = "\$(PERL6) --target=pir --output=$.blib-pir $.lib-pm";
+        return "$header\n\t$mkdir\n\t$compile\n";
     }
 }
 
-sub get_sources() {
-    return () unless 'lib/'.IO ~~ :d || 'lib6/'.IO ~~ :d;
+sub get_modules() {
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
@@ -103,48 +104,26 @@ sub get_sources() {
                             qx[find lib6 -name \*.pm -or -name \*.pm6];
 
     }
+    my @modules = @module-files.map: {Module.new(lib-pm => $_)};
+    say @modules.perl;
+    my %modules-by-name = @modules>>.name Z @modules;
+    for @modules {
+        .dependencies.push: %modules-by-name{ dependencies(.lib-pm) };
+    }
+    return @modules;
+}
 
-    # To know the best order of compilation, we build a dependency graph of
-    # all the modules in lib/. %usages_of ends up containing a graph, with
-    # the keys (containing names modules) being nodes, and the values
-    # (containing arrays of names) denoting directed edges.
+sub dependencies($filename) {
+    my @deps;
+    my $fh = open($filename, :r);
+    gather for $fh.lines() {
+        if /^\s* ['use'|'need'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
+            next if $used eq 'v6';
+            next if $used eq 'MONKEY_TYPING';
 
-    my @modules = map &path-to-module-name, @module-files;
-    my %module-to-path = @modules Z=> @module-files;
-    my %usages_of;
-    for @module-files -> $module-file {
-        my $fh = open($module-file, :r);
-        my $module = path-to-module-name($module-file);
-        %usages_of{$module} = [];
-        for $fh.lines() {
-            if /^\s* ['use'|'need'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
-                next if $used eq 'v6';
-                next if $used eq 'MONKEY_TYPING';
-
-                %usages_of{$module}.push(~$used);
-            }
+            take ~$used;
         }
     }
-
-    my @order = topo-sort(@modules, %usages_of);
-
-    # The intended effect of the below loop is to put as many module paths on
-    # each line as possible, breaking when necessary, and indenting nicely.
-
-    my @sources = map { %module-to-path{$_} }, @order;
-    my $sources = 'SOURCES=';
-    my $line-length = 0;
-    for @sources -> $source {
-        $line-length += $source.chars + 1;
-        if $line-length > 65 {
-                        # SOURCES=
-            $sources ~= "\\\n        ";
-            $line-length = $source.chars + 1;
-        }
-        $sources ~= $source ~ ' ';
-    }
-    $sources.=trim-trailing;
-    return $sources;
 }
 
 # Internally, we treat the module names as module names, '::' and all.
@@ -153,31 +132,6 @@ sub get_sources() {
 
 sub path-to-module-name($path) {
     $path.subst(/^'lib/'/, '').subst(/^'lib6/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
-}
-
-# According to "Introduction to Algorithms" by Cormen et al., topological
-# sort is just a depth-first search of a graph where you pay attention to
-# the order in which you get done with a dfs-visit() for each node.
-
-sub topo-sort(@modules, %dependencies) {
-    my @order;
-    my %color_of = @modules X=> 'not yet visited';
-    sub dfs-visit($module) {
-        %color_of{$module} = 'visited';
-        for %dependencies{$module}.list -> $used {
-            if (%color_of{$used} // '') eq 'not yet visited' {
-                dfs-visit($used);
-            }
-        }
-        push @order, $module;
-    }
-
-    for @modules -> $module {
-        if %color_of{$module} eq 'not yet visited' {
-            dfs-visit($module);
-        }
-    }
-    @order;
 }
 
 # vim: ft=perl6
