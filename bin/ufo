@@ -96,7 +96,7 @@ class Module {
     method install-rule {
         join '',
             map { "\t$_\n" },
-            '$(MKDIR) ' ~ $.lib-dir,
+            '$(MKDIR) $(PREFIX)/' ~ $.lib-dir,
             '$(CP) ' ~ $.blib-pm  ~ ' ' ~ $.install-pm,
             '$(CP) ' ~ $.blib-pir ~ ' ' ~ $.install-pir;
     }
