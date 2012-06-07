@@ -54,6 +54,10 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
     my $install_rules = join '', @modules>>.install-rule;
+	if $scripts {
+		$install_rules ~= "\t\$(MKDIR) \$(PREFIX)/bin\n"
+						~ "\t\$(CP) \$(SCRIPTS) \$(PREFIX)/bin\n";
+	}
 
     $makefile.print(
         makefile_template()\
@@ -68,11 +72,10 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 }
 
 sub get_scripts() {
-    my $ret = 'SCRIPTS=';
     if 'bin'.IO ~~ :d {
-        $ret ~= qx[echo bin/*].chomp;
+       return 'SCRIPTS= ' ~ qx[echo bin/*].chomp;
     }
-    return $ret;
+	return '';
 }
 
 class Module {
@@ -94,7 +97,7 @@ class Module {
     method install-pir { '$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, '.pir') }
     method install-pm  { '$(PREFIX)/' ~  $.lib-pm }
     method install-rule {
-        join '',
+        my $rule =join '',
             map { "\t$_\n" },
             '$(MKDIR) $(PREFIX)/' ~ $.lib-dir,
             '$(CP) ' ~ $.blib-pm  ~ ' ' ~ $.install-pm,
