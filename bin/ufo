@@ -47,6 +47,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     }
 
     my @modules = get_modules();
+    my @pods    = get_pods();
     my $scripts = get_scripts();
 
     my $blib_pirs = join ' ', 'BLIB_PIRS =', @modules>>.blib-pir;
@@ -58,6 +59,11 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
 		$install_rules ~= "\t\$(MKDIR) \$(PREFIX)/bin\n"
 						~ "\t\$(CP) \$(SCRIPTS) \$(PREFIX)/bin\n";
 	}
+    for @pods {
+        my $dir         = .subst(rx{<-[/]>+$}, '');
+        $install_rules ~= "\t\$(MKDIR) \$(PREFIX)/$dir\n";
+        $install_rules ~= "\t\$(CP) $_ \$(PREFIX)/$dir\n";
+    }
 
     $makefile.print(
         makefile_template()\
@@ -103,6 +109,17 @@ class Module {
             '$(CP) ' ~ $.blib-pm  ~ ' ' ~ $.install-pm,
             '$(CP) ' ~ $.blib-pir ~ ' ' ~ $.install-pir;
     }
+}
+
+sub get_pods() {
+    my @pod-files;
+    if 'lib/'.IO ~~ :d {
+        @pod-files.push: lines qx[find lib -name \*.pod];
+    }
+    if 'lib6/'.IO ~~ :d {
+        @pod-files.push: lines qx[find lib6 -name \*.pod];
+    }
+    return @pod-files;
 }
 
 sub get_modules() {
