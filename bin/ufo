@@ -136,12 +136,11 @@ sub get_modules() {
         @module-files.push: grep { $_ },
                             split "\n",
                             qx[find lib6 -name \*.pm -or -name \*.pm6];
-
     }
     my @modules = @module-files.map: {Module.new(lib-pm => $_)};
     my %modules-by-name = @modules>>.name Z @modules;
     for @modules {
-        .dependencies.push: %modules-by-name{ dependencies(.lib-pm) };
+        .dependencies.push: %modules-by-name{ dependencies(.lib-pm) }.grep: *.defined
     }
     return @modules;
 }
