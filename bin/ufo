@@ -112,31 +112,14 @@ class Module {
 }
 
 sub get_pods() {
-    my @pod-files;
-    if 'lib/'.IO ~~ :d {
-        @pod-files.push: lines qx[find lib -name \*.pod];
-    }
-    if 'lib6/'.IO ~~ :d {
-        @pod-files.push: lines qx[find lib6 -name \*.pod];
-    }
-    return @pod-files;
+    find-file-by-ext(<lib6 lib>, 'pod');
 }
 
 sub get_modules() {
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
-    my @module-files;
-    if 'lib/'.IO ~~ :d {
-        @module-files.push: grep { $_ },
-                            split "\n",
-                            qx[find lib -name \*.pm -or -name \*.pm6];
-    }
-    if 'lib6/'.IO ~~ :d {
-        @module-files.push: grep { $_ },
-                            split "\n",
-                            qx[find lib6 -name \*.pm -or -name \*.pm6];
-    }
+    my @module-files = find-file-by-ext(<lib lib6>, <pm pm6>);
     my @modules = @module-files.map: {Module.new(lib-pm => $_)};
     my %modules-by-name = @modules>>.name Z @modules;
     for @modules {
@@ -164,6 +147,29 @@ sub dependencies($filename) {
 
 sub path-to-module-name($path) {
     $path.subst(/^'lib/'/, '').subst(/^'lib6/'/, '').subst(/\.pm6?$/, '').subst('/', '::', :g);
+}
+
+sub find-file-by-ext(@dirs, *@ext) {
+    my $ext-re = @ext.join('|');
+    my $f = rx/\. <{ $ext-re }> $ /; # RAKUDO: should just be \. @ext $
+    gather for @dirs {
+        dirwalk($_, :$f, :fx(&take)) if .IO.d;
+    }
+}
+
+sub dirwalk(Str $dir = '.', Mu :$d = none(<. ..>), Mu :$f = *, :&dx = -> $ {}, :&fx = -> $ {}) {
+    for dir($dir, :test(*)) -> $p {
+        my $path = "$dir/$p";
+        given $path.IO {
+            when .f {
+                fx($path) if $path ~~ $f
+            }
+            when .d {
+                dirwalk(.path, :$d, :$f, :&dx, :&fx) if $p ~~ $d;
+            }
+        }
+    }
+    dx($dir) if $dir ~~ $d;
 }
 
 # vim: ft=perl6
