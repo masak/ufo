@@ -158,16 +158,13 @@ sub find-file-by-ext(@dirs, *@ext) {
 }
 
 sub dirwalk(Str $dir = '.', Mu :$d = none(<. ..>), Mu :$f = *, :&dx = -> $ {}, :&fx = -> $ {}) {
-    for dir($dir, :test(*)) -> $p {
-        my $path = "$dir/$p";
-        given $path.IO {
-            when .f {
-                fx($path) if $path ~~ $f
-            }
-            when .d {
-                dirwalk(.path, :$d, :$f, :&dx, :&fx) if $p ~~ $d;
-            }
+    for dir($dir, :test(*)) {
+        when .f {
+            fx($path) if $path ~~ $f
         }
+        when .d {
+            dirwalk(.path, :$d, :$f, :&dx, :&fx) if $p ~~ $d;
+            }
     }
     dx($dir) if $dir ~~ $d;
 }
