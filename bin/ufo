@@ -157,14 +157,6 @@ sub find-file-by-ext(@dirs, *@ext) {
     }
 }
 
-sub basename(Str $path) {
-    my $slash = $path.rindex('/');
-    if $slash {
-        return $path.substr($slash + 1)
-    }
-    return $path
-}
-
 sub dirwalk(Str $dir = '.', Mu :$d = none(<. ..>), Mu :$f = *, :&dx = -> $ {}, :&fx = -> $ {}) {
     for dir($dir, :test(*)) -> $p {
         when $p.f {
@@ -172,7 +164,7 @@ sub dirwalk(Str $dir = '.', Mu :$d = none(<. ..>), Mu :$f = *, :&dx = -> $ {}, :
         }
         when $p.d {
             dirwalk($p.path, :$d, :$f, :&dx, :&fx)
-                if basename($p.path) ~~ $d;
+                if $p.basename ~~ $d;
         }
     }
     dx($dir) if $dir ~~ $d;
