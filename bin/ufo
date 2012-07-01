@@ -135,6 +135,7 @@ sub dependencies($filename) {
         if /^\s* ['use'|'need'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
             next if $used eq 'v6';
             next if $used eq 'MONKEY_TYPING';
+            next if $used eq 'fatal';
 
             take ~$used;
         }
