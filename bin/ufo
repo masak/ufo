@@ -6,7 +6,7 @@ sub makefile_template() {
 .PHONY: all build test install clean distclean purge
 
 PERL6  = $binary
-DESTDIR= $ED
+DESTDIR= 
 PREFIX = $prefix
 BLIB   = blib
 P6LIB  = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
@@ -57,13 +57,13 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
     my $install_rules = join '', @modules>>.install-rule;
 	if $scripts {
-		$install_rules ~= "\t\$(MKDIR) \$(DESTDIR)$(PREFIX)/bin\n"
-						~ "\t\$(CP) \$(SCRIPTS) \$(DESTDIR)$(PREFIX)/bin\n";
+		$install_rules ~= "\t\$(MKDIR) \$(DESTDIR)\$(PREFIX)/bin\n"
+						~ "\t\$(CP) \$(SCRIPTS) \$(DESTDIR)\$(PREFIX)/bin\n";
 	}
     for @pods {
         my $dir         = .subst(rx{<-[/]>+$}, '');
-        $install_rules ~= "\t\$(MKDIR) \$(DESTDIR)$(PREFIX)/$dir\n";
-        $install_rules ~= "\t\$(CP) $_ \$(DESTDIR)$(PREFIX)/$dir\n";
+        $install_rules ~= "\t\$(MKDIR) \$(DESTDIR)\$(PREFIX)/$dir\n";
+        $install_rules ~= "\t\$(CP) $_ \$(DESTDIR)\$(PREFIX)/$dir\n";
     }
 
     $makefile.print(
