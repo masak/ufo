@@ -6,6 +6,7 @@ sub makefile_template() {
 .PHONY: all build test install clean distclean purge
 
 PERL6  = $binary
+DESTDIR= $ED
 PREFIX = $prefix
 BLIB   = blib
 P6LIB  = $(PWD)/$(BLIB)/lib:$(PWD)/lib:$(PERL6LIB)
@@ -56,13 +57,13 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
     my $install_rules = join '', @modules>>.install-rule;
 	if $scripts {
-		$install_rules ~= "\t\$(MKDIR) \$(PREFIX)/bin\n"
-						~ "\t\$(CP) \$(SCRIPTS) \$(PREFIX)/bin\n";
+		$install_rules ~= "\t\$(MKDIR) \$(DESTDIR)$(PREFIX)/bin\n"
+						~ "\t\$(CP) \$(SCRIPTS) \$(DESTDIR)$(PREFIX)/bin\n";
 	}
     for @pods {
         my $dir         = .subst(rx{<-[/]>+$}, '');
-        $install_rules ~= "\t\$(MKDIR) \$(PREFIX)/$dir\n";
-        $install_rules ~= "\t\$(CP) $_ \$(PREFIX)/$dir\n";
+        $install_rules ~= "\t\$(MKDIR) \$(DESTDIR)$(PREFIX)/$dir\n";
+        $install_rules ~= "\t\$(CP) $_ \$(DESTDIR)$(PREFIX)/$dir\n";
     }
 
     $makefile.print(
@@ -101,12 +102,12 @@ class Module {
         return "$header\n\t$mkdir\n\t$copy\n\t$compile\n";
     }
 
-    method install-pir { '$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, '.pir') }
-    method install-pm  { '$(PREFIX)/' ~  $.lib-pm }
+    method install-pir { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, '.pir') }
+    method install-pm  { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm }
     method install-rule {
         my $rule =join '',
             map { "\t$_\n" },
-            '$(MKDIR) $(PREFIX)/' ~ $.lib-dir,
+            '$(MKDIR) $(DESTDIR)$(PREFIX)/' ~ $.lib-dir,
             '$(CP) ' ~ $.blib-pm  ~ ' ' ~ $.install-pm,
             '$(CP) ' ~ $.blib-pir ~ ' ' ~ $.install-pir;
     }
