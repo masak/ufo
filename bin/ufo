@@ -155,16 +155,12 @@ sub mkpath($path) {
 
 
 sub dependencies($filename) {
-    my @deps;
-    my $fh = open($filename, :r);
-    gather for $fh.lines() {
-        if /^\s* ['use'|'need'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
-            next if $used eq 'v6';
-            next if $used eq 'MONKEY_TYPING';
-            next if $used eq 'fatal';
+    gather for slurp($filename).comb(/^\s* ['use'|'need'] \s+ <( \w+ ['::' \w+]* )>/) {
+        next if $_ eq 'v6';
+        next if $_ eq 'MONKEY_TYPING';
+        next if $_ eq 'fatal';
 
-            take ~$used;
-        }
+        take ~$_;
     }
 }
 
