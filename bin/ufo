@@ -119,6 +119,8 @@ role ParrotOutput {
 }
 
 role JVMOutput {
+    method target { 'jar' }
+    method extension { '.jar' }
 }
 
 role MoarOutput {
