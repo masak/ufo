@@ -41,6 +41,33 @@ distclean purge: clean
 
 }
 
+my regex ident {
+    \w+
+}
+
+my regex delimited-pod-block {
+    ^^
+    \s*
+    '=begin'
+    \s+
+    <ident>
+    .*
+    # XXX match same leading indent?
+    '=end'
+    \s+
+    <ident> # XXX match same ident?
+}
+
+class PodStripper {
+    method strip(Str $code is copy --> Str) {
+        while $code ~~ /<delimited-pod-block>/ {
+            $code = $code.substr(0, $/.from) ~ $code.substr($/.to);
+        }
+
+        $code
+    }
+}
+
 sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my $binary = $alpha ?? 'alpha' !! $*EXECUTABLE_NAME;
     if $alpha {
@@ -178,8 +205,9 @@ sub mkpath($path) {
 
 sub dependencies($filename) {
     my @deps;
-    my $fh = open($filename, :r);
-    gather for $fh.lines() {
+    my $code = slurp($filename);
+       $code = PodStripper.strip($code);
+    gather for $code.lines() {
         if /^\s* ['use'|'need'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
             next if $used eq 'v6';
             next if $used eq 'MONKEY_TYPING';
