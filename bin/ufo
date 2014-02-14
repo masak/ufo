@@ -92,7 +92,7 @@ my %VM_FORMATS =
     moar   => { :target<mbc>, :extension<.moarvm> },
 ;
 my $format = %VM_FORMATS{ $*VM<name> } //
-    die "Unrecognized backend '$*VM<name>'. Please contant your local VM representative.";
+    die "Unrecognized backend '$*VM<name>'. Please contact your local VM representative.";
 
 class Module {
     has $.lib-pm;
