@@ -86,9 +86,18 @@ sub get_scripts() {
 	return '';
 }
 
+constant %VM_FORMATS =
+    :parrot{ :target<pir>, :extension<.pir>    },
+    :jvm{    :target<jar>, :extension<.jar>    },
+    :moar{   :target<mbc>, :extension<.moarvm> },
+;
+constant $format = %VM_FORMATS{ $*VM<name> };
+
 class Module {
     has $.lib-pm;
     has @.dependencies is rw;
+    has $.target    = $format<target>;
+    has $.extension = $format<extension>;
     method name     { path-to-module-name($.lib-pm) }
     method lib-dir  { $.lib-pm.subst(rx{<-[/]>+$}, '') }
     method blib-compiled { $.blib-pm.subst(rx/\.pm6?$/, $.extension) }
@@ -113,40 +122,18 @@ class Module {
     }
 }
 
-role ParrotOutput {
-    method target { 'pir' }
-    method extension { '.pir' }
-}
-
-role JVMOutput {
-    method target { 'jar' }
-    method extension { '.jar' }
-}
-
-role MoarOutput {
-    method target { 'mbc' }
-    method extension { '.moarvm' }
-}
-
 sub get_pods() {
     find-file-by-ext(<lib6 lib>, 'pod');
 }
 
-my %VM-ROLES = (
-    :parrot(ParrotOutput),
-    :jvm(JVMOutput),
-    :moar(MoarOutput),
-);
-
 sub get_modules() {
-    my $vm-role = %VM-ROLES{ $*VM<name> };
-    # The grep is needed because 'find' prints a final newline, so there'll be an
-    # empty-string element at the end of the list.
 
     my @module-files = find-file-by-ext(<lib lib6>, <pm pm6>);
-    my @modules = @module-files.map: {Module.new(lib-pm => $_) but $vm-role};
+    my @modules = @module-files.map: { Module.new(lib-pm => $_) };
     my %modules-by-name = @modules>>.name Z @modules;
     for @modules {
+        # The grep is needed because 'find' prints a final newline, so there'll be an
+        # empty-string element at the end of the list.
         .dependencies.push: %modules-by-name{ dependencies(.lib-pm) }.grep: *.defined
     }
     return @modules;
