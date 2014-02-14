@@ -86,12 +86,13 @@ sub get_scripts() {
 	return '';
 }
 
-constant %VM_FORMATS =
-    :parrot{ :target<pir>, :extension<.pir>    },
-    :jvm{    :target<jar>, :extension<.jar>    },
-    :moar{   :target<mbc>, :extension<.moarvm> },
+my %VM_FORMATS =
+    parrot => { :target<pir>, :extension<.pir>    },
+    jvm    => { :target<jar>, :extension<.jar>    },
+    moar   => { :target<mbc>, :extension<.moarvm> },
 ;
-constant $format = %VM_FORMATS{ $*VM<name> };
+my $format = %VM_FORMATS{ $*VM<name> } //
+    die "Unrecognized backend '$*VM<name>'. Please contant your local VM representative.";
 
 class Module {
     has $.lib-pm;
