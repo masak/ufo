@@ -14,9 +14,9 @@ CP     = cp -p
 MKDIR  = mkdir -p
 
 $scripts
-$blib_pirs
+$blib_compiled
 
-all build: $(BLIB_PIRS)
+all build: $(BLIB_COMPILED)
 
 $build_rules
 
@@ -29,7 +29,7 @@ loudtest: build
 timetest: build
 	env PERL6LIB=$(P6LIB) PERL6_TEST_TIMES=1 prove -ve '$(PERL6)' -r t/
 
-install: $(BLIB_PIRS)
+install: $(BLIB_COMPILED)
 $install_rules
 
 clean:
@@ -41,8 +41,35 @@ distclean purge: clean
 
 }
 
+my regex ident {
+    \w+
+}
+
+my regex delimited-pod-block {
+    ^^
+    \s*
+    '=begin'
+    \s+
+    <ident>
+    .*
+    # XXX match same leading indent?
+    '=end'
+    \s+
+    <ident> # XXX match same ident?
+}
+
+class PodStripper {
+    method strip(Str $code is copy --> Str) {
+        while $code ~~ /<delimited-pod-block>/ {
+            $code = $code.substr(0, $/.from) ~ $code.substr($/.to);
+        }
+
+        $code
+    }
+}
+
 sub MAIN($filename = 'Makefile', Bool :$alpha) {
-    my $binary = $alpha ?? 'alpha' !! 'perl6';
+    my $binary = $alpha ?? 'alpha' !! $*EXECUTABLE_NAME;
     if $alpha {
         note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
     }
@@ -51,7 +78,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
     my @pods    = get_pods();
     my $scripts = get_scripts();
 
-    my $blib_pirs = join ' ', 'BLIB_PIRS =', @modules>>.blib-pir;
+    my $blib_compiled = join ' ', 'BLIB_COMPILED =', @modules>>.blib-compiled;
     my $build_rules = join "\n", @modules>>.buildrule;
 
     my $makefile = $filename eq '-' ?? $*OUT !! open $filename, :w;
@@ -70,7 +97,7 @@ sub MAIN($filename = 'Makefile', Bool :$alpha) {
         makefile_template()\
             .subst(/^\n/, '')\
             .subst('$binary', $binary)\
-            .subst('$blib_pirs', $blib_pirs)\
+            .subst('$blib_compiled', $blib_compiled)\
             .subst('$build_rules', $build_rules)\
             .subst('$install_rules', $install_rules)\
             .subst('$scripts', $scripts)\
@@ -91,38 +118,60 @@ class Module {
     has @.dependencies is rw;
     method name     { path-to-module-name($.lib-pm) }
     method lib-dir  { $.lib-pm.subst(rx{<-[/]>+$}, '') }
+    method blib-compiled { $.blib-pm.subst(rx/\.pm6?$/, $.extension) }
     method blib-pm  { q[$(BLIB)/] ~ $.lib-pm }
-    method blib-pir { $.blib-pm.subst(rx/\.pm6?$/, '.pir') }
     method blib-dir { $.blib-pm.subst(rx{<-[/]>+$}, '') }
     method buildrule {
-        my $header  = join(' ', $.blib-pir, ':', $.lib-pm, @.dependencies.map: *.blib-pir);
+        my $header  = join(' ', $.blib-compiled, ':', $.lib-pm, @.dependencies.map: *.blib-compiled);
         my $mkdir   = q[$(MKDIR) ] ~ $.blib-dir;
         my $copy    = join ' ', '$(CP)', $.lib-pm, $.blib-pm;
-        my $compile = "PERL6LIB=\$(P6LIB) \$(PERL6) --target=pir --output=$.blib-pir $.lib-pm";
+        my $compile = "PERL6LIB=\$(P6LIB) \$(PERL6) --target=$.target --output=$.blib-compiled $.lib-pm";
         return "$header\n\t$mkdir\n\t$copy\n\t$compile\n";
     }
 
-    method install-pir { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, '.pir') }
+    method install-compiled { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, $.extension) }
     method install-pm  { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm }
     method install-rule {
         my $rule =join '',
             map { "\t$_\n" },
             '$(MKDIR) $(DESTDIR)$(PREFIX)/' ~ $.lib-dir,
             '$(CP) ' ~ $.blib-pm  ~ ' ' ~ $.install-pm,
-            '$(CP) ' ~ $.blib-pir ~ ' ' ~ $.install-pir;
+            '$(CP) ' ~ $.blib-compiled ~ ' ' ~ $.install-compiled;
     }
+}
+
+role ParrotOutput {
+    method target { 'pir' }
+    method extension { '.pir' }
+}
+
+role JVMOutput {
+    method target { 'jar' }
+    method extension { '.jar' }
+}
+
+role MoarOutput {
+    method target { 'mbc' }
+    method extension { '.moarvm' }
 }
 
 sub get_pods() {
     find-file-by-ext(<lib6 lib>, 'pod');
 }
 
+my %VM-ROLES = (
+    :parrot(ParrotOutput),
+    :jvm(JVMOutput),
+    :moar(MoarOutput),
+);
+
 sub get_modules() {
+    my $vm-role = %VM-ROLES{ $*VM<name> };
     # The grep is needed because 'find' prints a final newline, so there'll be an
     # empty-string element at the end of the list.
 
     my @module-files = find-file-by-ext(<lib lib6>, <pm pm6>);
-    my @modules = @module-files.map: {Module.new(lib-pm => $_)};
+    my @modules = @module-files.map: {Module.new(lib-pm => $_) but $vm-role};
     my %modules-by-name = @modules>>.name Z @modules;
     for @modules {
         .dependencies.push: %modules-by-name{ dependencies(.lib-pm) }.grep: *.defined
@@ -156,8 +205,9 @@ sub mkpath($path) {
 
 sub dependencies($filename) {
     my @deps;
-    my $fh = open($filename, :r);
-    gather for $fh.lines() {
+    my $code = slurp($filename);
+       $code = PodStripper.strip($code);
+    gather for $code.lines() {
         if /^\s* ['use'|'need'] \s+ (\w+ ['::' \w+]*)/ && $0 -> $used {
             next if $used eq 'v6';
             next if $used eq 'MONKEY_TYPING';
