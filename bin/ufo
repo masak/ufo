@@ -91,8 +91,8 @@ my %VM_FORMATS =
     jvm    => { :target<jar>, :extension<.jar>    },
     moar   => { :target<mbc>, :extension<.moarvm> },
 ;
-my $format = %VM_FORMATS{ $*VM<name> } //
-    die "Unrecognized backend '$*VM<name>'. Please contact your local VM representative.";
+my $format = %VM_FORMATS{ $*VM.name } //
+    die "Unrecognized backend '{$*VM.name}'. Please contact your local VM representative.";
 
 class Module {
     has $.lib-pm;
