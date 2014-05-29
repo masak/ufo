@@ -158,7 +158,7 @@ sub get_prefix() {
 
 # blatantly stolen from Shell::Command
 sub mkpath($path) {
-    for [\~] $path.split('/').map({"$_/"}) {
+    for [\~] $path.Str.split('/').map({"$_/"}) {
         mkdir($_) unless .path.d
     }
 }
