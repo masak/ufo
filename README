@@ -85,10 +85,7 @@ this little cheatsheet to help other humans use the device:
 == Repositories that still use human technology
 
 * benchmark -- Configure.pl, lib/Configure.pm and Makefile.in
-* grampa -- Configure, lib/Configure.pm and Makefile.in
 * io-prompt -- Configure.pl, lib/Configure.pm and Makefile.in
 * Perl6-Term--ANSIColor -- Configure.pl, lib/Configure.pm and Makefile.in
-* statistics-lite -- Makefile.PL and Makefile.in
-* Vector -- Configure, lib/Configure.pm and Makefile.in
 * web -- Configure, lib/Configure.pm and Makefile.in
 * yarn -- Configure.pl, lib/Configure.pm and Makefile.in
