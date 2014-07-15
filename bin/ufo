@@ -91,7 +91,7 @@ my %VM_FORMATS =
     jvm    => { :target<jar>, :extension<.jar>    },
     moar   => { :target<mbc>, :extension<.moarvm> },
 ;
-my $format = %VM_FORMATS{ $*VM<name> } //
+my $format = %VM_FORMATS{ $*VM.name } //
     die "Unrecognized backend '$*VM<name>'. Please contact your local VM representative.";
 
 class Module {
@@ -145,7 +145,7 @@ sub get_prefix() {
     for <site home> -> $loc {
         my $path = %*CUSTOM_LIB{$loc};
         push @tried, $path;
-        mkpath($path);
+        mkpath(~$path);
         next unless $path.path.d;
         say 'WARNING: You need to re-run ufo whenver you ',
             $loc eq 'site' ?? 'update to a new Rakudo version'
