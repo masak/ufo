@@ -101,7 +101,7 @@ class Module {
     has $.extension = $format<extension>;
     method name     { path-to-module-name($.lib-pm) }
     method lib-dir  { $.lib-pm.subst(rx{<-[/]>+$}, '') }
-    method blib-compiled { $.blib-pm.subst(rx/\.pm6?$/, $.extension) }
+    method blib-compiled { $.blib-pm ~ $.extension }
     method blib-pm  { q[$(BLIB)/] ~ $.lib-pm }
     method blib-dir { $.blib-pm.subst(rx{<-[/]>+$}, '') }
     method buildrule {
