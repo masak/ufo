@@ -112,7 +112,7 @@ class Module {
         return "$header\n\t$mkdir\n\t$copy\n\t$compile\n";
     }
 
-    method install-compiled { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm.subst(rx/\.pm6?$/, $.extension) }
+    method install-compiled { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm ~ $.extension }
     method install-pm  { '$(DESTDIR)$(PREFIX)/' ~  $.lib-pm }
     method install-rule {
         my $rule =join '',
