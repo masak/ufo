@@ -146,7 +146,7 @@ sub get_prefix() {
         my $path = %*CUSTOM_LIB{$loc};
         push @tried, $path;
         mkpath(~$path);
-        next unless $path.path.d;
+        next unless $path.IO.d;
         say 'WARNING: You need to re-run ufo whenver you ',
             $loc eq 'site' ?? 'update to a new Rakudo version'
                            !! 'recompile Rakudo';
@@ -159,7 +159,7 @@ sub get_prefix() {
 # blatantly stolen from Shell::Command
 sub mkpath($path) {
     for [\~] $path.split('/').map({"$_/"}) {
-        mkdir($_) unless .path.d
+        mkdir($_) unless .IO.d
     }
 }
 
