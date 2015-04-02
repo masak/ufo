@@ -2,6 +2,7 @@
     "name"        : "ufo",
     "version"     : "*",
     "description" : "Swoops down and creates your Perl 6 project Makefile for you",
+    "provides"    : { },
     "depends"     : [ ],
     "source-url"  : "git://github.com/masak/ufo.git"
 }
