@@ -42,7 +42,7 @@ distclean purge: clean
 }
 
 sub MAIN($filename = 'Makefile', Bool :$alpha) {
-    my $binary = $alpha ?? 'alpha' !! $*EXECUTABLE_NAME;
+    my $binary = $alpha ?? 'alpha' !! $*EXECUTABLE-NAME;
     if $alpha {
         note "Using 'alpha' as the Perl 6 binary. Please upgrade your code.";
     }
