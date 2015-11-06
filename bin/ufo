@@ -105,7 +105,7 @@ class Module {
     method blib-pm  { q[$(BLIB)/] ~ $.lib-pm }
     method blib-dir { $.blib-pm.subst(rx{<-[/]>+$}, '') }
     method buildrule {
-        my $header  = join(' ', $.blib-compiled, ':', $.lib-pm, @.dependencies.map: *.blib-compiled);
+        my $header  = join(' ', $.blib-compiled, ':', $.lib-pm, @.dependencies>>.blib-compiled);
         my $mkdir   = q[$(MKDIR) ] ~ $.blib-dir;
         my $copy    = join ' ', '$(CP)', $.lib-pm, $.blib-pm;
         my $compile = "PERL6LIB=\$(P6LIB) \$(PERL6) --target=$.target --output=$.blib-compiled $.lib-pm";
