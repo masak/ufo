@@ -1,4 +1,5 @@
 {
+    "perl"        : "6.*",
     "name"        : "ufo",
     "version"     : "*",
     "description" : "Swoops down and creates your Perl 6 project Makefile for you",
